@@ -6,7 +6,7 @@ namespace wen {
 Window* g_window = nullptr;
 
 Window::Window(const WindowInfo& info) {
-    WEN_INFO("Create window:({0}, {1}, {2})", info.title, info.width, info.height)
+    WEN_INFO("Create window: ({0}, {1}, {2})", info.title, info.width, info.height)
 
     glfwSetErrorCallback([](int error, const char* description) {
         WEN_ERROR("GLFW Error ({0}): {1}", error, description)

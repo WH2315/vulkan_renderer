@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "basic/device.hpp"
 
 namespace wen {
 
@@ -18,6 +18,7 @@ public:
 public:
     vk::Instance vk_instance;
     vk::SurfaceKHR surface;
+    std::unique_ptr<Device> device;
 
 private:
     void createVkInstance();

@@ -13,8 +13,8 @@ void Manager::initializeEngine() {
 void Manager::initializeRenderer() {
     g_window = new Window(renderer_config->window_info);
     Context::init();
-    Context::instance().initialize();
     manager = &Context::instance();
+    manager->initialize();
 }
 
 bool Manager::shouldClose() const {
@@ -26,9 +26,9 @@ void Manager::pollEvents() const {
 }
 
 void Manager::destroyRenderer() {
+    manager->destroy();
     manager = nullptr;
     delete manager;
-    Context::instance().destroy();
     Context::quit();
     g_window = nullptr;
     delete g_window;
