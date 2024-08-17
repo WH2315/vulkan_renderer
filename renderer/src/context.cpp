@@ -25,6 +25,7 @@ void Context::initialize() {
     createVkInstance();
     createSurface();
     device = std::make_unique<Device>();
+    swapchain = std::make_unique<Swapchain>();
     WEN_INFO("Vulkan Context Initialized!")
 }
 
@@ -95,6 +96,7 @@ void Context::createSurface() {
 }
 
 void Context::destroy() {
+    swapchain.reset();
     device.reset();
     vk_instance.destroySurfaceKHR(surface);
     vk_instance.destroy();

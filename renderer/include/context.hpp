@@ -1,6 +1,7 @@
 #pragma once
 
 #include "basic/device.hpp"
+#include "basic/swapchain.hpp"
 
 namespace wen {
 
@@ -19,6 +20,7 @@ public:
     vk::Instance vk_instance;
     vk::SurfaceKHR surface;
     std::unique_ptr<Device> device;
+    std::unique_ptr<Swapchain> swapchain;
 
 private:
     void createVkInstance();

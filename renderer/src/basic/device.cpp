@@ -163,7 +163,7 @@ bool Device::suitable(const vk::PhysicalDevice& device) {
         index++;
     }
     if (!found) {
-        WEN_WARN("Device does not support required queue family: {}", std::string(properties.deviceName))
+        WEN_WARN("Device does not support required queue family: {}", device_name)
         return false;
     }
 

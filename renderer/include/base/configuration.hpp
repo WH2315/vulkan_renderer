@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core/window.hpp"
+#include <vulkan/vulkan.hpp>
+#include <optional>
 
 namespace wen {
 
@@ -13,6 +15,9 @@ struct Configuration {
     bool debug = false;
     std::string app_name;
     std::string engine_name;
+
+    std::optional<vk::SurfaceFormatKHR> desired_format = std::nullopt;
+    std::optional<vk::PresentModeKHR> desired_mode = std::nullopt;
 };
 
 extern Configuration* renderer_config;
