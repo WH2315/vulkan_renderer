@@ -3,13 +3,18 @@
 
 namespace wen {
 
-RenderPipeline::RenderPipeline(const std::shared_ptr<ShaderProgram>& shader_program) {
+RenderPipeline::RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name) {
+    renderer_ = renderer;
     shader_program_ = shader_program;
+    subpass_name_ = subpass_name;
 }
 
 RenderPipeline::~RenderPipeline() {
+    manager->device->device.destroyPipeline(pipeline);
     manager->device->device.destroyPipelineLayout(pipeline_layout);
+    renderer_.reset();
     shader_program_.reset();
+    subpass_name_.clear();
 }
 
 void RenderPipeline::compile(const RenderPipelineOptions& options) {
@@ -68,22 +73,11 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
 
     // 8. color blending
     vk::PipelineColorBlendStateCreateInfo color_blend = {};
-    vk::PipelineColorBlendAttachmentState color_blend_attachment = {};
-    color_blend_attachment.setColorWriteMask({
-            vk::ColorComponentFlagBits::eR |
-            vk::ColorComponentFlagBits::eG |
-            vk::ColorComponentFlagBits::eB |
-            vk::ColorComponentFlagBits::eA
-        })
-        .setBlendEnable(false)
-        .setSrcColorBlendFactor(vk::BlendFactor::eOne)
-        .setDstColorBlendFactor(vk::BlendFactor::eZero)
-        .setColorBlendOp(vk::BlendOp::eAdd)
-        .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-        .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
-        .setAlphaBlendOp(vk::BlendOp::eAdd);
+    auto locked_renderer = renderer_.lock();
+    uint32_t subpass_index = locked_renderer->render_pass->getSubpassIndex(subpass_name_);
+    auto subpass = *locked_renderer->render_pass->subpasses[subpass_index];
     color_blend.setLogicOpEnable(false)
-        .setAttachments(color_blend_attachment)
+        .setAttachments(subpass.color_blend_attachments)
         .setBlendConstants({0.0f, 0.0f, 0.0f, 0.0f});
     
     // 9. dynamic state
@@ -107,7 +101,15 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
         .setPDepthStencilState(&depth_stencil)
         .setPColorBlendState(&color_blend)
         .setPDynamicState(&dynamic)
-        .setLayout(pipeline_layout);
+        .setLayout(pipeline_layout)
+        .setRenderPass(locked_renderer->render_pass->render_pass)
+        .setSubpass(subpass_index)
+        .setBasePipelineHandle(nullptr)
+        .setBasePipelineIndex(-1);
+    
+    locked_renderer.reset();
+
+    pipeline = manager->device->device.createGraphicsPipeline(nullptr, create_info).value;
 }
 
 vk::PipelineShaderStageCreateInfo RenderPipeline::createShaderStage(vk::ShaderStageFlagBits stage, vk::ShaderModule module) {

@@ -9,4 +9,9 @@ enum class ShaderStage {
     eFragment = static_cast<uint32_t>(vk::ShaderStageFlagBits::eFragment),
 };
 
+enum class AttachmentType {
+    eColor,
+    eDepth,
+};
+
 } // namespace wen
