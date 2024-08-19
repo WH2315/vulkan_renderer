@@ -1,5 +1,6 @@
 #include "base/utils.hpp"
 #include "manager.hpp"
+#include <fstream>
 
 namespace wen {
 
@@ -28,6 +29,21 @@ vk::ImageView createImageView(vk::Image image, vk::Format format,
         .setSubresourceRange(subresource_range);
 
     return manager->device->device.createImageView(create_info);
+}
+
+std::vector<char> readFile(const std::string& filename) {
+    std::vector<char> buffer(0);
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    if (!file.is_open()) {
+        WEN_ERROR("Open file \"{}\" failed!", filename)
+        return buffer;
+    }
+    size_t size = static_cast<size_t>(file.tellg());
+    file.seekg(0);
+    buffer.resize(size);
+    file.read(buffer.data(), size);
+    file.close();
+    return buffer;
 }
 
 } // namespace wen

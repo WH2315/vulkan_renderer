@@ -31,7 +31,11 @@ Swapchain::Swapchain() {
     if (renderer_config->desired_mode.has_value()) {
         desired_mode = renderer_config->desired_mode.value();
     } else {
-        desired_mode = vk::PresentModeKHR::eMailbox;
+        if (renderer_config->sync) {
+            desired_mode = vk::PresentModeKHR::eFifo;
+        } else {
+            desired_mode = vk::PresentModeKHR::eMailbox;
+        }
     }
     for (auto mode : details.modes) {
         if (mode == desired_mode) {
@@ -40,9 +44,10 @@ Swapchain::Swapchain() {
         }
     }
 
-    image_count = std::clamp<uint32_t>(mode == vk::PresentModeKHR::eMailbox ? 4 : 3,
-                                       details.capabilities.minImageCount,
-                                       details.capabilities.maxImageCount);
+    image_count = details.capabilities.minImageCount + 1;
+    if (details.capabilities.maxImageCount > 0 && image_count > details.capabilities.maxImageCount) {
+        image_count = details.capabilities.maxImageCount;
+    }
 
     uint32_t width = std::clamp<uint32_t>(details.capabilities.currentExtent.width,
                                           details.capabilities.minImageExtent.width,

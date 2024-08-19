@@ -18,6 +18,7 @@ struct Configuration {
 
     std::optional<vk::SurfaceFormatKHR> desired_format = std::nullopt;
     std::optional<vk::PresentModeKHR> desired_mode = std::nullopt;
+    bool sync = false;
 };
 
 extern Configuration* renderer_config;
