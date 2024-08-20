@@ -19,6 +19,8 @@ struct Configuration {
     std::optional<vk::SurfaceFormatKHR> desired_format = std::nullopt;
     std::optional<vk::PresentModeKHR> desired_mode = std::nullopt;
     bool sync = false;
+
+    uint32_t max_frames_in_flight = 2;
 };
 
 extern Configuration* renderer_config;

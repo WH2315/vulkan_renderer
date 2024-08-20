@@ -47,12 +47,28 @@ int main() {
 
     render_pipeline->compile({
         .depth_test_enable = false,
-        .dynamic_states = {}
+        .dynamic_states = {
+            vk::DynamicState::eViewport,
+            vk::DynamicState::eScissor
+        }
     });
 
     while (!manager->shouldClose()) {
         manager->pollEvents();
+
+        auto width = wen::renderer_config->getWidth(), height = wen::renderer_config->getHeight();
+        auto w = static_cast<float>(width), h = static_cast<float>(height);
+
+        renderer->setClearColor("swapchain_image", {{0.5f, 0.5f, 0.5f, 1.0f}});
+
+        renderer->beginRender();
+        renderer->bindPipeline(render_pipeline);
+        renderer->setViewport(0, h, w, -h);
+        renderer->setScissor(0, 0, width, height);
+        renderer->draw(3, 1, 0, 0);
+        renderer->endRender();
     }
+    renderer->waitIdle();
 
     render_pipeline.reset();
     shader_program.reset();

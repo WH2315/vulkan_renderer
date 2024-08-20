@@ -26,6 +26,7 @@ void Context::initialize() {
     createSurface();
     device = std::make_unique<Device>();
     swapchain = std::make_unique<Swapchain>();
+    command_pool = std::make_unique<CommandPool>(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
     WEN_INFO("Vulkan Context Initialized!")
 }
 
@@ -96,11 +97,23 @@ void Context::createSurface() {
 }
 
 void Context::destroy() {
+    command_pool.reset();
     swapchain.reset();
     device.reset();
     vk_instance.destroySurfaceKHR(surface);
     vk_instance.destroy();
     WEN_INFO("Vulkan Context Destroyed!")
+}
+
+void Context::recreateSwapchain() {
+    int width = 0, height = 0;
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(g_window->getWindow(), &width, &height);
+        glfwWaitEvents();
+    }
+    device->device.waitIdle();
+    swapchain.reset();
+    swapchain = std::make_unique<Swapchain>();
 }
 
 } // namespace wen

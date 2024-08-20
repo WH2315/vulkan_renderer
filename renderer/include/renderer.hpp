@@ -1,6 +1,8 @@
 #pragma once
 
 #include "resources/render_pass.hpp"
+#include "basic/framebuffer.hpp"
+#include "resources/render_pipeline.hpp"
 
 namespace wen {
 
@@ -9,8 +11,43 @@ public:
     Renderer(std::shared_ptr<RenderPass> render_pass);
     ~Renderer();
 
+    void acquireNextImage();
+    void beginRenderPass();
+    void beginRender();
+    void endRenderPass(); 
+    void present();
+    void endRender();
+
+public:
+    void setClearColor(const std::string& name, const vk::ClearValue& value);
+
+public:
+    void bindPipeline(const std::shared_ptr<RenderPipeline>& render_pipeline);
+    void setViewport(float x, float y, float width, float height);
+    void setScissor(int x, int y, uint32_t width, uint32_t height);
+    void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+
+public:
+    vk::CommandBuffer getCurrentBuffer() { return current_buffer_; }
+    void updateFramebuffers();
+    void updateSwapchain();
+    void waitIdle();
+
 public:
     std::shared_ptr<RenderPass> render_pass;
+    std::vector<Framebuffer*> framebuffers;
+
+private:
+    uint32_t index_;
+
+    uint32_t current_frame_ = 0;
+    std::vector<vk::CommandBuffer> command_buffers_;
+    vk::CommandBuffer current_buffer_;
+
+    std::vector<vk::Semaphore> image_available_semaphores_;
+    std::vector<vk::Semaphore> render_finished_semaphores_;
+    std::vector<vk::Fence> in_flight_fences_;
+    std::vector<std::vector<vk::SubmitInfo>> in_flight_submit_infos_;
 };
 
 } // namespace wen

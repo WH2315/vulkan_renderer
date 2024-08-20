@@ -2,6 +2,7 @@
 
 #include "basic/device.hpp"
 #include "basic/swapchain.hpp"
+#include "basic/command_pool.hpp"
 
 namespace wen {
 
@@ -16,11 +17,14 @@ public:
     void initialize();
     void destroy();
 
+    void recreateSwapchain();
+
 public:
     vk::Instance vk_instance;
     vk::SurfaceKHR surface;
     std::unique_ptr<Device> device;
     std::unique_ptr<Swapchain> swapchain;
+    std::unique_ptr<CommandPool> command_pool;
 
 private:
     void createVkInstance();

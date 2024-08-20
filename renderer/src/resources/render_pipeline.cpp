@@ -36,7 +36,7 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
     
     // 4. viewport
     vk::PipelineViewportStateCreateInfo viewport = {};
-    auto width = renderer_config->window_info.width, height = renderer_config->window_info.height;
+    auto width = renderer_config->getWidth(), height = renderer_config->getHeight();
     auto w = static_cast<float>(width), h = static_cast<float>(height);
     vk::Viewport view(0.0f, 0.0f, w, h, 0.0f, 1.0f);
     vk::Rect2D scissor({0, 0}, {width, height});
@@ -51,8 +51,8 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
         .setRasterizerDiscardEnable(false)
         .setPolygonMode(vk::PolygonMode::eFill)
         .setLineWidth(1.0f)
-        .setCullMode(vk::CullModeFlagBits::eBack)
-        .setFrontFace(vk::FrontFace::eCounterClockwise)
+        .setCullMode(vk::CullModeFlagBits::eNone)
+        .setFrontFace(vk::FrontFace::eClockwise)
         .setDepthBiasEnable(false)
         .setDepthBiasConstantFactor(0.0f)
         .setDepthBiasClamp(false)
