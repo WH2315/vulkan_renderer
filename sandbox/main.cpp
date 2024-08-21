@@ -38,8 +38,8 @@ int main() {
 
     auto renderer = interface->createRenderer(std::move(render_pass));
 
-    auto vert_shader = interface->loadShader("vert.spv", wen::ShaderStage::eVertex);
-    auto frag_shader = interface->loadShader("frag.spv", wen::ShaderStage::eFragment);
+    auto vert_shader = interface->loadShader("shader.vert", wen::ShaderStage::eVertex);
+    auto frag_shader = interface->loadShader("shader.frag", wen::ShaderStage::eFragment);
     auto shader_program = interface->createShaderProgram();
     shader_program->attach(vert_shader).attach(frag_shader);
 

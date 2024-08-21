@@ -1,4 +1,5 @@
 #include "manager.hpp"
+#include <glslang/Public/ShaderLang.h>
 
 namespace wen {
 
@@ -11,6 +12,7 @@ void Manager::initializeEngine() {
 }
 
 void Manager::initializeRenderer() {
+    glslang::InitializeProcess();
     g_window = new Window(renderer_config->window_info);
     Context::init();
     manager = &Context::instance();
@@ -32,6 +34,7 @@ void Manager::destroyRenderer() {
     Context::quit();
     g_window = nullptr;
     delete g_window;
+    glslang::FinalizeProcess();
 }
 
 void Manager::destroyEngine() {

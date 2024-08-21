@@ -31,19 +31,24 @@ vk::ImageView createImageView(vk::Image image, vk::Format format,
     return manager->device->device.createImageView(create_info);
 }
 
-std::vector<char> readFile(const std::string& filename) {
-    std::vector<char> buffer(0);
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-    if (!file.is_open()) {
-        WEN_ERROR("Open file \"{}\" failed!", filename)
-        return buffer;
+std::string readFile(const std::string& filename) {
+    std::string result;
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+    if (file) {
+        file.seekg(0, std::ios::end);
+        size_t size = file.tellg();
+        if (size != -1) {
+            result.resize(size);
+            file.seekg(0, std::ios::beg);
+            file.read(&result[0], size);
+            file.close();
+        } else {
+            WEN_ERROR("Could not read file '{0}'", filename)
+        }
+    } else {
+        WEN_ERROR("Could not open file '{0}'", filename)
     }
-    size_t size = static_cast<size_t>(file.tellg());
-    file.seekg(0);
-    buffer.resize(size);
-    file.read(buffer.data(), size);
-    file.close();
-    return buffer;
+    return result;
 }
 
 } // namespace wen

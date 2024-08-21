@@ -9,6 +9,6 @@ vk::ImageView createImageView(vk::Image image, vk::Format format,
                               uint32_t layer_count = 1,
                               vk::ImageViewType view_type = vk::ImageViewType::e2D);
 
-std::vector<char> readFile(const std::string& filename);
+std::string readFile(const std::string& filename);
 
 } // namespace wen
