@@ -53,8 +53,8 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
     vk::PipelineRasterizationStateCreateInfo rasterizer = {};
     rasterizer.setDepthClampEnable(true)
         .setRasterizerDiscardEnable(false)
-        .setPolygonMode(vk::PolygonMode::eFill)
-        .setLineWidth(1.0f)
+        .setPolygonMode(options.polygon_mode)
+        .setLineWidth(options.line_width)
         .setCullMode(vk::CullModeFlagBits::eNone)
         .setFrontFace(vk::FrontFace::eClockwise)
         .setDepthBiasEnable(false)

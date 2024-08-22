@@ -1,5 +1,6 @@
 #include "wen.hpp"
 #include <glm/glm.hpp>
+#include <iostream>
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -48,11 +49,28 @@ int main() {
         glm::vec3 position;
         glm::vec3 color;
     };
-    const std::vector<Vertex> vertices = {
-        {{ 0.0f,  0.5f, 0.0f}, {1.0f, 0.1f, 0.0f}},
-        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.5f}},
-        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 1.0f}},
+    float rad = 3.1415926f / 180.0f;
+    float R = 1;
+    float r = R * sin(18 * rad) / cos(36 * rad);
+    glm::vec2 RVertex[5];
+    glm::vec2 rVertex[5];
+    for (int k = 0; k < 5; k++) {
+       RVertex[k] = {-(R * cos((90 + k * 72 + 18.0f) * rad)), -(R * sin((90 + k * 72 + 18.0f) * rad))};
+       rVertex[k] = {-(r * cos((90 + 36 + k * 72 + 18.0f) * rad)), -(r * sin((90 + 36 + k * 72 + 18.0f) * rad))};
+    }
+    std::vector<Vertex> vertices = {
+        {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
     };
+    for (int i = 0; i < 5; i++) {
+        vertices.push_back({{RVertex[i], 0.0f}, {1.0f, 0.0f, 0.0f}});
+        vertices.push_back({{rVertex[i], 0.0f}, {1.0f, 0.0f, 0.0f}});
+    }
+    std::vector<uint16_t> indices;
+    for (int i = 1; i <= 10; i++) {
+        indices.push_back(0);
+        indices.push_back(i);
+        indices.push_back(i % 10 + 1);
+    }
 
     auto vertex_input = interface->createVertexInput({
         {
@@ -67,10 +85,14 @@ int main() {
 
     auto vertex_buffer = interface->createVertexBuffer(sizeof(Vertex), vertices.size());
     vertex_buffer->setData(vertices);
+    auto index_buffer = interface->createIndexBuffer(wen::IndexType::eUint16, indices.size());
+    index_buffer->setData(indices);
 
     auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
     render_pipeline->setVertexInput(vertex_input);
     render_pipeline->compile({
+        .polygon_mode = vk::PolygonMode::eLine,
+        .line_width = 5.0f,
         .depth_test_enable = false,
         .dynamic_states = {
             vk::DynamicState::eViewport,
@@ -91,12 +113,15 @@ int main() {
         renderer->setViewport(0, h, w, -h);
         renderer->setScissor(0, 0, width, height);
         renderer->bindVertexBuffer(vertex_buffer);
-        renderer->draw(3, 1, 0, 0);
+        renderer->bindIndexBuffer(index_buffer); 
+        // renderer->draw(3, 1, 0, 0);
+        renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
         renderer->endRender();
     }
     renderer->waitIdle();
 
     render_pipeline.reset();
+    index_buffer.reset();
     vertex_buffer.reset();
     vertex_input.reset();
     shader_program.reset();

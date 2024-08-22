@@ -191,8 +191,16 @@ void Renderer::bindVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buff
     bindVertexBuffers({vertex_buffer}, binding);
 }
 
+void Renderer::bindIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer) {
+    current_buffer_.bindIndexBuffer(index_buffer->getBuffer(), 0, index_buffer->getIndexType());
+}
+
 void Renderer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
     current_buffer_.draw(vertex_count, instance_count, first_vertex, first_instance);
+}
+
+void Renderer::drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance) {
+    current_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
 } // namespace wen

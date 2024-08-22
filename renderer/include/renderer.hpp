@@ -4,6 +4,7 @@
 #include "basic/framebuffer.hpp"
 #include "resources/render_pipeline.hpp"
 #include "resources/vertex_input/vertex_buffer.hpp"
+#include "resources/vertex_input/index_buffer.hpp"
 
 namespace wen {
 
@@ -28,7 +29,9 @@ public:
     void setScissor(int x, int y, uint32_t width, uint32_t height);
     void bindVertexBuffers(const std::vector<std::shared_ptr<VertexBuffer>>& vertex_buffers, uint32_t first_binding = 0);
     void bindVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buffer, uint32_t binding = 0);
+    void bindIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer);
     void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+    void drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance);
 
 public:
     vk::CommandBuffer getCurrentBuffer() { return current_buffer_; }

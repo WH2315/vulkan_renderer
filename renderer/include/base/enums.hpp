@@ -25,4 +25,9 @@ enum class VertexType {
     eFloat, eFloat2, eFloat3, eFloat4,
 };
 
+enum class IndexType {
+    eUint16,
+    eUint32,
+};
+
 } // namespace wen
