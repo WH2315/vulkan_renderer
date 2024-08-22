@@ -27,6 +27,7 @@ void Context::initialize() {
     device = std::make_unique<Device>();
     swapchain = std::make_unique<Swapchain>();
     command_pool = std::make_unique<CommandPool>(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    createVmaAllocator();
     WEN_INFO("Vulkan Context Initialized!")
 }
 
@@ -96,7 +97,17 @@ void Context::createSurface() {
     surface = vk::SurfaceKHR(_surface);
 }
 
+void Context::createVmaAllocator() {
+    VmaAllocatorCreateInfo create_info = {};
+    create_info.vulkanApiVersion = VK_API_VERSION_1_3;
+    create_info.instance = vk_instance;
+    create_info.physicalDevice = device->physical_device;
+    create_info.device = device->device;
+    vmaCreateAllocator(&create_info, &vma_allocator);
+}
+
 void Context::destroy() {
+    vmaDestroyAllocator(vma_allocator);
     command_pool.reset();
     swapchain.reset();
     device.reset();

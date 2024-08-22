@@ -11,4 +11,7 @@ vk::ImageView createImageView(vk::Image image, vk::Format format,
 
 std::string readFile(const std::string& filename);
 
+template <typename DstType, typename SrcType>
+DstType convert(SrcType src);
+
 } // namespace wen

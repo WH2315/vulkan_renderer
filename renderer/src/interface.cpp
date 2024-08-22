@@ -26,4 +26,12 @@ std::shared_ptr<RenderPipeline> Interface::createRenderPipeline(std::weak_ptr<Re
     return std::make_shared<RenderPipeline>(renderer, shader_program, subpass_name);
 }
 
+std::shared_ptr<VertexInput> Interface::createVertexInput(const std::vector<VertexInputInfo>& infos) {
+    return std::make_shared<VertexInput>(infos);
+}
+
+std::shared_ptr<VertexBuffer> Interface::createVertexBuffer(uint32_t size, uint32_t count) {
+    return std::make_shared<VertexBuffer>(size, count);
+}
+
 } // namespace wen

@@ -1,4 +1,5 @@
 #include "wen.hpp"
+#include <glm/glm.hpp>
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -43,8 +44,32 @@ int main() {
     auto shader_program = interface->createShaderProgram();
     shader_program->attach(vert_shader).attach(frag_shader);
 
-    auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
+    struct Vertex {
+        glm::vec3 position;
+        glm::vec3 color;
+    };
+    const std::vector<Vertex> vertices = {
+        {{ 0.0f,  0.5f, 0.0f}, {1.0f, 0.1f, 0.0f}},
+        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.5f}},
+        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 1.0f}},
+    };
 
+    auto vertex_input = interface->createVertexInput({
+        {
+            .binding = 0,
+            .input_rate = wen::InputRate::eVertex,
+            .formats = {
+                wen::VertexType::eFloat3, // position
+                wen::VertexType::eFloat3  // color
+            }
+        }
+    });
+
+    auto vertex_buffer = interface->createVertexBuffer(sizeof(Vertex), vertices.size());
+    vertex_buffer->setData(vertices);
+
+    auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
+    render_pipeline->setVertexInput(vertex_input);
     render_pipeline->compile({
         .depth_test_enable = false,
         .dynamic_states = {
@@ -65,12 +90,15 @@ int main() {
         renderer->bindPipeline(render_pipeline);
         renderer->setViewport(0, h, w, -h);
         renderer->setScissor(0, 0, width, height);
+        renderer->bindVertexBuffer(vertex_buffer);
         renderer->draw(3, 1, 0, 0);
         renderer->endRender();
     }
     renderer->waitIdle();
 
     render_pipeline.reset();
+    vertex_buffer.reset();
+    vertex_input.reset();
     shader_program.reset();
     frag_shader.reset();
     vert_shader.reset();

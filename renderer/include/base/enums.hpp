@@ -14,4 +14,15 @@ enum class AttachmentType {
     eDepth,
 };
 
+enum class InputRate {
+    eVertex,
+    eInstance,
+};
+
+enum class VertexType {
+    eInt32, eInt32x2, eInt32x3, eInt32x4,
+    eUint32, eUint32x2, eUint32x3, eUint32x4,
+    eFloat, eFloat2, eFloat3, eFloat4,
+};
+
 } // namespace wen

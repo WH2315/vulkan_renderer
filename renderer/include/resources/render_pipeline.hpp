@@ -2,6 +2,7 @@
 
 #include "resources/shader_program.hpp"
 #include "renderer.hpp"
+#include "resources/vertex_input/vertex_input.hpp"
 
 namespace wen {
 
@@ -15,6 +16,8 @@ public:
     RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name);
     ~RenderPipeline();
 
+    void setVertexInput(std::shared_ptr<VertexInput> vertex_input);
+
     void compile(const RenderPipelineOptions& options = {});
 
 public:
@@ -25,6 +28,7 @@ private:
     std::weak_ptr<Renderer> renderer_;
     std::shared_ptr<ShaderProgram> shader_program_;
     std::string subpass_name_;
+    std::shared_ptr<VertexInput> vertex_input_;
 
 private:
     vk::PipelineShaderStageCreateInfo createShaderStage(vk::ShaderStageFlagBits stage, vk::ShaderModule module);

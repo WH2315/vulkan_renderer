@@ -10,3 +10,6 @@
 [submodule "3rdlibs/glslang"]
 	path = 3rdlibs/glslang
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "3rdlibs/vma"]
+	path = 3rdlibs/vma
+	url = https://github.com/LunarG/VulkanMemoryAllocator.git

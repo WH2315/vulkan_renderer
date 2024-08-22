@@ -177,6 +177,20 @@ void Renderer::setScissor(int x, int y, uint32_t width, uint32_t height) {
     current_buffer_.setScissor(0, {scissor});
 }
 
+void Renderer::bindVertexBuffers(const std::vector<std::shared_ptr<VertexBuffer>>& vertex_buffers, uint32_t first_binding) {
+    std::vector<vk::Buffer> buffers;
+    std::vector<vk::DeviceSize> offsets;
+    for (const auto& vertex_buffer : vertex_buffers) {
+        buffers.push_back(vertex_buffer->getBuffer());
+        offsets.push_back(0);
+    }
+    current_buffer_.bindVertexBuffers(first_binding, buffers, offsets);
+}
+
+void Renderer::bindVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buffer, uint32_t binding) {
+    bindVertexBuffers({vertex_buffer}, binding);
+}
+
 void Renderer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
     current_buffer_.draw(vertex_count, instance_count, first_vertex, first_instance);
 }

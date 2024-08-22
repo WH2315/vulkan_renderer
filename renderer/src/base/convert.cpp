@@ -1,0 +1,50 @@
+#include "base/enums.hpp"
+#include "base/utils.hpp"
+
+namespace wen {
+
+template <>
+vk::VertexInputRate convert<vk::VertexInputRate>(InputRate input_rate) {
+    switch (input_rate) {
+        case InputRate::eVertex: return vk::VertexInputRate::eVertex;
+        case InputRate::eInstance: return vk::VertexInputRate::eInstance;
+    }
+}
+
+template <>
+vk::Format convert<vk::Format>(VertexType format) {
+    switch (format) {
+        case VertexType::eInt32: return vk::Format::eR32Sint;
+        case VertexType::eInt32x2: return vk::Format::eR32G32Sint;
+        case VertexType::eInt32x3: return vk::Format::eR32G32B32Sint;
+        case VertexType::eInt32x4: return vk::Format::eR32G32B32A32Sint;
+        case VertexType::eUint32: return vk::Format::eR32Uint;
+        case VertexType::eUint32x2: return vk::Format::eR32G32Uint;
+        case VertexType::eUint32x3: return vk::Format::eR32G32B32Uint;
+        case VertexType::eUint32x4: return vk::Format::eR32G32B32A32Uint;
+        case VertexType::eFloat: return vk::Format::eR32Sfloat;
+        case VertexType::eFloat2: return vk::Format::eR32G32Sfloat;
+        case VertexType::eFloat3: return vk::Format::eR32G32B32Sfloat;
+        case VertexType::eFloat4: return vk::Format::eR32G32B32A32Sfloat;
+    }
+}
+
+template <>
+uint32_t convert<uint32_t>(VertexType format) {
+    switch (format) {
+        case VertexType::eInt32: return 4;
+        case VertexType::eInt32x2: return 8;
+        case VertexType::eInt32x3: return 12;
+        case VertexType::eInt32x4: return 16;
+        case VertexType::eUint32: return 4;
+        case VertexType::eUint32x2: return 8;
+        case VertexType::eUint32x3: return 12;
+        case VertexType::eUint32x4: return 16;
+        case VertexType::eFloat: return 4;
+        case VertexType::eFloat2: return 8;
+        case VertexType::eFloat3: return 12;
+        case VertexType::eFloat4: return 16;
+    }
+}
+
+} // namespace wen

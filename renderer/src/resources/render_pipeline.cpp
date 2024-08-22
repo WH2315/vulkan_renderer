@@ -17,6 +17,10 @@ RenderPipeline::~RenderPipeline() {
     subpass_name_.clear();
 }
 
+void RenderPipeline::setVertexInput(std::shared_ptr<VertexInput> vertex_input) {
+    vertex_input_ = std::move(vertex_input);
+}
+
 void RenderPipeline::compile(const RenderPipelineOptions& options) {
     // 1. shader stages
     std::vector<vk::PipelineShaderStageCreateInfo> shader_stages = {
@@ -26,8 +30,8 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
 
     // 2. vertex input
     vk::PipelineVertexInputStateCreateInfo vertex_input = {};
-    vertex_input.setVertexAttributeDescriptions(nullptr)
-        .setVertexBindingDescriptions(nullptr);
+    vertex_input.setVertexAttributeDescriptions(vertex_input_->attribute_descriptions_)
+        .setVertexBindingDescriptions(vertex_input_->binding_descriptions_);
     
     // 3. input assembly
     vk::PipelineInputAssemblyStateCreateInfo input_assembly = {};
