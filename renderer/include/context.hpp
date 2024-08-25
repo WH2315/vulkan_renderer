@@ -3,6 +3,7 @@
 #include "basic/device.hpp"
 #include "basic/swapchain.hpp"
 #include "basic/command_pool.hpp"
+#include "basic/descriptor_pool.hpp"
 #include <vk_mem_alloc.h>
 
 namespace wen {
@@ -26,6 +27,7 @@ public:
     std::unique_ptr<Device> device;
     std::unique_ptr<Swapchain> swapchain;
     std::unique_ptr<CommandPool> command_pool;
+    std::unique_ptr<DescriptorPool> descriptor_pool;
     VmaAllocator vma_allocator;
 
 private:

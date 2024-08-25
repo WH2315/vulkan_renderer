@@ -1,6 +1,7 @@
 #include "wen.hpp"
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#include <iostream>
+#include <glm/gtc/matrix_transform.hpp>
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -88,8 +89,15 @@ int main() {
     auto index_buffer = interface->createIndexBuffer(wen::IndexType::eUint16, indices.size());
     index_buffer->setData(indices);
 
+    auto descriptor_set = interface->createDescriptorSet();
+    descriptor_set->addDescriptors({
+        {0, vk::DescriptorType::eUniformBuffer, wen::ShaderStage::eVertex}
+    });
+    descriptor_set->build();
+
     auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
     render_pipeline->setVertexInput(vertex_input);
+    render_pipeline->setDescriptorSet(descriptor_set);
     render_pipeline->compile({
         .polygon_mode = vk::PolygonMode::eLine,
         .line_width = 5.0f,
@@ -100,27 +108,44 @@ int main() {
         }
     });
 
+    struct UBO {
+        glm::mat4 model;
+    } ubo;
+
+    auto uniform_buffer = interface->createUniformBuffer(sizeof(UBO));
+
+    descriptor_set->bindUniform(0, uniform_buffer);
+
     while (!manager->shouldClose()) {
         manager->pollEvents();
+
+        static auto start = std::chrono::high_resolution_clock::now();
+        auto current = std::chrono::high_resolution_clock::now();
+        auto time = std::chrono::duration<float, std::chrono::seconds::period>(current - start).count();
 
         auto width = wen::renderer_config->getWidth(), height = wen::renderer_config->getHeight();
         auto w = static_cast<float>(width), h = static_cast<float>(height);
 
         renderer->setClearColor("swapchain_image", {{0.5f, 0.5f, 0.5f, 1.0f}});
 
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        memcpy(uniform_buffer->getData(), &ubo, sizeof(UBO));
+
         renderer->beginRender();
         renderer->bindPipeline(render_pipeline);
+        renderer->bindDescriptorSets(render_pipeline);
         renderer->setViewport(0, h, w, -h);
         renderer->setScissor(0, 0, width, height);
         renderer->bindVertexBuffer(vertex_buffer);
         renderer->bindIndexBuffer(index_buffer); 
-        // renderer->draw(3, 1, 0, 0);
         renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
         renderer->endRender();
     }
     renderer->waitIdle();
 
+    uniform_buffer.reset();
     render_pipeline.reset();
+    descriptor_set.reset();
     index_buffer.reset();
     vertex_buffer.reset();
     vertex_input.reset();

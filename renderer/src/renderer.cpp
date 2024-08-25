@@ -167,6 +167,16 @@ void Renderer::bindPipeline(const std::shared_ptr<RenderPipeline>& render_pipeli
     current_buffer_.bindPipeline(vk::PipelineBindPoint::eGraphics, render_pipeline->pipeline);
 }
 
+void Renderer::bindDescriptorSets(const std::shared_ptr<RenderPipeline>& render_pipeline) {
+    if (!render_pipeline->descriptor_sets.empty()) {
+        std::vector<vk::DescriptorSet> sets;
+        for (const auto& descriptor_set : render_pipeline->descriptor_sets) {
+            sets.push_back(descriptor_set.value()->descriptor_sets_[current_frame_]);
+        }
+        current_buffer_.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, render_pipeline->pipeline_layout, 0, sets, {});
+    }
+}
+
 void Renderer::setViewport(float x, float y, float width, float height) {
     vk::Viewport viewport{x, y, width, height, 0.0f, 1.0f};
     current_buffer_.setViewport(0, {viewport});

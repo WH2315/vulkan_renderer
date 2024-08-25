@@ -27,6 +27,7 @@ void Context::initialize() {
     device = std::make_unique<Device>();
     swapchain = std::make_unique<Swapchain>();
     command_pool = std::make_unique<CommandPool>(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    descriptor_pool = std::make_unique<DescriptorPool>();
     createVmaAllocator();
     WEN_INFO("Vulkan Context Initialized!")
 }
@@ -108,6 +109,7 @@ void Context::createVmaAllocator() {
 
 void Context::destroy() {
     vmaDestroyAllocator(vma_allocator);
+    descriptor_pool.reset();
     command_pool.reset();
     swapchain.reset();
     device.reset();

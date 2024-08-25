@@ -63,4 +63,12 @@ uint32_t convert<uint32_t>(IndexType type) {
     }
 }
 
+template <>
+vk::ShaderStageFlags convert<vk::ShaderStageFlags>(ShaderStage stage) {
+    switch (stage) {
+        case ShaderStage::eVertex: return vk::ShaderStageFlagBits::eVertex;
+        case ShaderStage::eFragment: return vk::ShaderStageFlagBits::eFragment;
+    }
+}
+
 } // namespace wen

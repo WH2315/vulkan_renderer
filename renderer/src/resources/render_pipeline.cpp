@@ -10,6 +10,7 @@ RenderPipeline::RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shar
 }
 
 RenderPipeline::~RenderPipeline() {
+    descriptor_sets.clear();
     manager->device->device.destroyPipeline(pipeline);
     manager->device->device.destroyPipelineLayout(pipeline_layout);
     renderer_.reset();
@@ -19,6 +20,13 @@ RenderPipeline::~RenderPipeline() {
 
 void RenderPipeline::setVertexInput(std::shared_ptr<VertexInput> vertex_input) {
     vertex_input_ = std::move(vertex_input);
+}
+
+void RenderPipeline::setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index) {
+    if (index + 1 > descriptor_sets.size()) {
+        descriptor_sets.resize(index + 1);
+    }
+    descriptor_sets[index] = std::move(descriptor_set);
 }
 
 void RenderPipeline::compile(const RenderPipelineOptions& options) {
@@ -127,7 +135,14 @@ vk::PipelineShaderStageCreateInfo RenderPipeline::createShaderStage(vk::ShaderSt
 
 void RenderPipeline::createPipelineLayout() {
     vk::PipelineLayoutCreateInfo create_info;
+
     std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {};
+    descriptor_set_layouts.reserve(descriptor_sets.size());
+    for (const auto& descriptor_set : descriptor_sets) {
+        if (descriptor_set.has_value()) {
+            descriptor_set_layouts.push_back(descriptor_set.value()->descriptor_layout_);
+        }
+    }
 
     create_info.setSetLayouts(descriptor_set_layouts)
         .setPushConstantRanges(nullptr);

@@ -10,33 +10,33 @@ public:
     ~Log();
 
     template <typename... Args>
-    void trace(Args&&... args) {
-        logger_->trace(std::forward<Args>(args)...);
+    void trace(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->trace(fmt::format(format, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
-    void debug(Args&&... args) {
-        logger_->debug(std::forward<Args>(args)...);
+    void debug(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->debug(fmt::format(format, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
-    void info(Args&&... args) {
-        logger_->info(std::forward<Args>(args)...);
+    void info(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->info(fmt::format(format, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
-    void warn(Args&&... args) {
-        logger_->warn(std::forward<Args>(args)...);
+    void warn(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->warn(fmt::format(format, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
-    void error(Args&&... args) {
-        logger_->error(std::forward<Args>(args)...);
+    void error(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->error(fmt::format(format, std::forward<Args>(args)...));
     }
 
     template <typename... Args>
-    void critical(Args&&... args) {
-        logger_->critical(std::forward<Args>(args)...);
+    void critical(fmt::format_string<Args...> format, Args&&... args) {
+        logger_->critical(fmt::format(format, std::forward<Args>(args)...));
     }
 
 private:

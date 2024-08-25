@@ -38,4 +38,12 @@ std::shared_ptr<IndexBuffer> Interface::createIndexBuffer(IndexType type, uint32
     return std::make_shared<IndexBuffer>(type, count);
 }
 
+std::shared_ptr<DescriptorSet> Interface::createDescriptorSet() {
+    return std::make_shared<DescriptorSet>();
+}
+
+std::shared_ptr<UniformBuffer> Interface::createUniformBuffer(uint64_t size) {
+    return std::make_shared<UniformBuffer>(size);
+}
+
 } // namespace wen

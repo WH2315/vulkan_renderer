@@ -25,6 +25,7 @@ public:
 
 public:
     void bindPipeline(const std::shared_ptr<RenderPipeline>& render_pipeline);
+    void bindDescriptorSets(const std::shared_ptr<RenderPipeline>& render_pipeline);
     void setViewport(float x, float y, float width, float height);
     void setScissor(int x, int y, uint32_t width, uint32_t height);
     void bindVertexBuffers(const std::vector<std::shared_ptr<VertexBuffer>>& vertex_buffers, uint32_t first_binding = 0);

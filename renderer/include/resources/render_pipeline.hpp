@@ -3,6 +3,7 @@
 #include "resources/shader_program.hpp"
 #include "renderer.hpp"
 #include "resources/vertex_input/vertex_input.hpp"
+#include "resources/descriptor/descriptor_set.hpp"
 
 namespace wen {
 
@@ -19,12 +20,14 @@ public:
     ~RenderPipeline();
 
     void setVertexInput(std::shared_ptr<VertexInput> vertex_input);
+    void setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index = 0);
 
     void compile(const RenderPipelineOptions& options = {});
 
 public:
     vk::PipelineLayout pipeline_layout;
     vk::Pipeline pipeline;
+    std::vector<std::optional<std::shared_ptr<DescriptorSet>>> descriptor_sets;
 
 private:
     std::weak_ptr<Renderer> renderer_;
