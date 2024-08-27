@@ -13,3 +13,6 @@
 [submodule "3rdlibs/vma"]
 	path = 3rdlibs/vma
 	url = https://github.com/LunarG/VulkanMemoryAllocator.git
+[submodule "3rdlibs/imgui"]
+	path = 3rdlibs/imgui
+	url = https://github.com/ocornut/imgui.git

@@ -4,12 +4,16 @@
 
 namespace wen {
 
+struct Attachment {
+    vk::ImageView view;
+};
+
 class Renderer;
 class Framebuffer {
     friend class Renderer;
 
 public:
-    Framebuffer(const Renderer& renderer, vk::ImageView image_view);
+    Framebuffer(const Renderer& renderer, const std::vector<vk::ImageView>& image_views);
     ~Framebuffer();
 
 private:

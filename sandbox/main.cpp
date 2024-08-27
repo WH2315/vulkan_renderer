@@ -2,6 +2,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "core/imgui.hpp"
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -40,6 +41,7 @@ int main() {
     render_pass->build();
 
     auto renderer = interface->createRenderer(std::move(render_pass));
+    auto imgui = std::make_shared<wen::Imgui>(*renderer);
 
     auto vert_shader = interface->loadShader("shader.vert", wen::ShaderStage::eVertex);
     auto frag_shader = interface->loadShader("shader.frag", wen::ShaderStage::eFragment);
@@ -139,10 +141,16 @@ int main() {
         renderer->bindVertexBuffer(vertex_buffer);
         renderer->bindIndexBuffer(index_buffer); 
         renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
+
+        imgui->begin();
+        ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
+        imgui->end();
+
         renderer->endRender();
     }
     renderer->waitIdle();
 
+    imgui.reset();
     uniform_buffer.reset();
     render_pipeline.reset();
     descriptor_set.reset();

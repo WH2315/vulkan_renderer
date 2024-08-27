@@ -5,9 +5,7 @@ namespace wen {
 
 Renderer::Renderer(std::shared_ptr<RenderPass> render_pass) {
     this->render_pass = render_pass;
-    for (uint32_t i = 0; i < manager->swapchain->image_count; i++) {
-        framebuffers.push_back(new Framebuffer(*this, manager->swapchain->image_views[i]));
-    }
+    framebuffer_set = std::make_unique<FramebufferSet>(*this);
 
     current_frame_ = 0;
     command_buffers_ = manager->command_pool->allocateCommandBuffers(renderer_config->max_frames_in_flight);
@@ -35,25 +33,22 @@ Renderer::~Renderer() {
         manager->device->device.destroySemaphore(render_finished_semaphores_[i]);
         manager->device->device.destroyFence(in_flight_fences_[i]);
     }
-    for (auto& framebuffer : framebuffers) {
-        delete framebuffer;
-    }
-    framebuffers.clear();
+    framebuffer_set.reset();
     render_pass.reset();
 }
 
 void Renderer::updateFramebuffers() {
-    for (auto& framebuffer : framebuffers) {
-        delete framebuffer;
-    }
-    framebuffers.clear();
-    for (uint32_t i = 0; i < manager->swapchain->image_count; i++) {
-        framebuffers.push_back(new Framebuffer(*this, manager->swapchain->image_views[i]));
-    }
+    framebuffer_set.reset();
+    framebuffer_set = std::make_unique<FramebufferSet>(*this);
 }
 
 void Renderer::updateSwapchain() {
     manager->recreateSwapchain();
+    updateFramebuffers();
+}
+
+void Renderer::updateRenderPass() {
+    render_pass->update();
     updateFramebuffers();
 }
 
@@ -85,6 +80,7 @@ void Renderer::acquireNextImage() {
 
     device.resetFences(in_flight_fences_[current_frame_]);
 
+    current_subpass_ = 0;
     current_buffer_.reset();
     vk::CommandBufferBeginInfo begin_info;
     current_buffer_.begin(begin_info);
@@ -101,7 +97,7 @@ void Renderer::beginRenderPass() {
     auto w = renderer_config->getWidth(), h = renderer_config->getHeight();
     vk::Rect2D render_area{{0, 0}, {w, h}};
     begin_info.setRenderPass(render_pass->render_pass)
-        .setFramebuffer(framebuffers[index_]->framebuffer_)
+        .setFramebuffer(framebuffer_set->framebuffers[index_]->framebuffer_)
         .setRenderArea(render_area)
         .setClearValues(clear_values);
     current_buffer_.beginRenderPass(begin_info, vk::SubpassContents::eInline);
@@ -211,6 +207,18 @@ void Renderer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t fir
 
 void Renderer::drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance) {
     current_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+}
+
+void Renderer::nextSubpass() {
+    current_buffer_.nextSubpass(vk::SubpassContents::eInline);
+    current_subpass_++;
+}
+
+void Renderer::nextSubpass(const std::string& name) {
+    auto index = render_pass->getSubpassIndex(name);
+    while (current_subpass_ != index) {
+        nextSubpass();
+    }
 }
 
 } // namespace wen

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "resources/render_pass.hpp"
-#include "basic/framebuffer.hpp"
 #include "resources/render_pipeline.hpp"
 #include "resources/vertex_input/vertex_buffer.hpp"
 #include "resources/vertex_input/index_buffer.hpp"
+#include "resources/framebuffer_set.hpp"
 
 namespace wen {
 
@@ -33,16 +33,19 @@ public:
     void bindIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer);
     void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
     void drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance);
+    void nextSubpass();
+    void nextSubpass(const std::string& name);
 
 public:
     vk::CommandBuffer getCurrentBuffer() { return current_buffer_; }
     void updateFramebuffers();
     void updateSwapchain();
+    void updateRenderPass();
     void waitIdle();
 
 public:
     std::shared_ptr<RenderPass> render_pass;
-    std::vector<Framebuffer*> framebuffers;
+    std::unique_ptr<FramebufferSet> framebuffer_set;
 
 private:
     uint32_t index_;
@@ -55,6 +58,8 @@ private:
     std::vector<vk::Semaphore> render_finished_semaphores_;
     std::vector<vk::Fence> in_flight_fences_;
     std::vector<std::vector<vk::SubmitInfo>> in_flight_submit_infos_;
+
+    uint32_t current_subpass_;
 };
 
 } // namespace wen
