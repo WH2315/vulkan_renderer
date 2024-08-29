@@ -51,29 +51,15 @@ int main() {
     struct Vertex {
         glm::vec3 position;
         glm::vec3 color;
+        glm::vec2 uv;
     };
-    float rad = 3.1415926f / 180.0f;
-    float R = 1;
-    float r = R * sin(18 * rad) / cos(36 * rad);
-    glm::vec2 RVertex[5];
-    glm::vec2 rVertex[5];
-    for (int k = 0; k < 5; k++) {
-       RVertex[k] = {-(R * cos((90 + k * 72 + 18.0f) * rad)), -(R * sin((90 + k * 72 + 18.0f) * rad))};
-       rVertex[k] = {-(r * cos((90 + 36 + k * 72 + 18.0f) * rad)), -(r * sin((90 + 36 + k * 72 + 18.0f) * rad))};
-    }
-    std::vector<Vertex> vertices = {
-        {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+    const std::vector<Vertex> vertices = {
+        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
     };
-    for (int i = 0; i < 5; i++) {
-        vertices.push_back({{RVertex[i], 0.0f}, {1.0f, 0.0f, 0.0f}});
-        vertices.push_back({{rVertex[i], 0.0f}, {1.0f, 0.0f, 0.0f}});
-    }
-    std::vector<uint16_t> indices;
-    for (int i = 1; i <= 10; i++) {
-        indices.push_back(0);
-        indices.push_back(i);
-        indices.push_back(i % 10 + 1);
-    }
+    const std::vector<uint16_t> indices = {0, 1, 2, 1, 2, 3};
 
     auto vertex_input = interface->createVertexInput({
         {
@@ -81,7 +67,8 @@ int main() {
             .input_rate = wen::InputRate::eVertex,
             .formats = {
                 wen::VertexType::eFloat3, // position
-                wen::VertexType::eFloat3  // color
+                wen::VertexType::eFloat3, // color
+                wen::VertexType::eFloat2  // uv
             }
         }
     });
@@ -93,7 +80,8 @@ int main() {
 
     auto descriptor_set = interface->createDescriptorSet();
     descriptor_set->addDescriptors({
-        {0, vk::DescriptorType::eUniformBuffer, wen::ShaderStage::eVertex}
+        {0, vk::DescriptorType::eUniformBuffer, wen::ShaderStage::eVertex},
+        {1, vk::DescriptorType::eCombinedImageSampler, wen::ShaderStage::eFragment}
     });
     descriptor_set->build();
 
@@ -101,8 +89,7 @@ int main() {
     render_pipeline->setVertexInput(vertex_input);
     render_pipeline->setDescriptorSet(descriptor_set);
     render_pipeline->compile({
-        .polygon_mode = vk::PolygonMode::eLine,
-        .line_width = 5.0f,
+        .polygon_mode = vk::PolygonMode::eFill,
         .depth_test_enable = false,
         .dynamic_states = {
             vk::DynamicState::eViewport,
@@ -116,7 +103,21 @@ int main() {
 
     auto uniform_buffer = interface->createUniformBuffer(sizeof(UBO));
 
+    auto texture = interface->createTexture("texture.jpg");
+    auto sampler = interface->createSampler({
+        .mag_filter = vk::Filter::eNearest,
+        .min_filter = vk::Filter::eLinear,
+        .address_mode_u = vk::SamplerAddressMode::eMirroredRepeat,
+        .address_mode_v = vk::SamplerAddressMode::eMirroredRepeat,
+        .address_mode_w = vk::SamplerAddressMode::eRepeat,
+        .max_anisotropy = 16,
+        .border_color = vk::BorderColor::eFloatOpaqueBlack,
+        .mipmap_mode = vk::SamplerMipmapMode::eLinear,
+        .mip_levels = texture->getMipLevels()
+    });
+
     descriptor_set->bindUniform(0, uniform_buffer);
+    descriptor_set->bindTexture(1, texture, sampler);
 
     while (!manager->shouldClose()) {
         manager->pollEvents();
@@ -151,6 +152,8 @@ int main() {
     renderer->waitIdle();
 
     imgui.reset();
+    sampler.reset();
+    texture.reset();
     uniform_buffer.reset();
     render_pipeline.reset();
     descriptor_set.reset();

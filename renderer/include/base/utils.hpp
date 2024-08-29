@@ -14,4 +14,14 @@ std::string readFile(const std::string& filename);
 template <typename DstType, typename SrcType>
 DstType convert(SrcType src);
 
+struct TransitionInfo {
+    vk::ImageLayout layout;
+    vk::AccessFlags access;
+    vk::PipelineStageFlags stage;
+};
+
+void transitionImageLayout(vk::Image image, vk::ImageAspectFlagBits aspect,
+                           uint32_t mip_levels, const TransitionInfo& src,
+                           const TransitionInfo& dst);
+
 } // namespace wen

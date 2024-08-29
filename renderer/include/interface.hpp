@@ -10,6 +10,8 @@
 #include "resources/vertex_input/index_buffer.hpp"
 #include "resources/descriptor/descriptor_set.hpp"
 #include "resources/descriptor/uniform_buffer.hpp"
+#include "resources/descriptor/image_texture.hpp"
+#include "resources/sampler.hpp"
 
 namespace wen {
 
@@ -27,10 +29,14 @@ public:
     std::shared_ptr<IndexBuffer> createIndexBuffer(IndexType type, uint32_t count);
     std::shared_ptr<DescriptorSet> createDescriptorSet();
     std::shared_ptr<UniformBuffer> createUniformBuffer(uint64_t size);
+    std::shared_ptr<DataTexture> createTexture(const uint8_t* data, uint32_t width, uint32_t height, uint32_t mip_levels = 0);
+    std::shared_ptr<ImageTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
+    std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
 
 private:
     std::string path_;
     std::string shader_dir_;
+    std::string texture_dir_;
 };
 
 } // namespace wen

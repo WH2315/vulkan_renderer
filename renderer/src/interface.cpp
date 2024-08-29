@@ -4,6 +4,7 @@ namespace wen {
 
 Interface::Interface(const std::string& path) : path_(path) {
     shader_dir_ = path_ + "/shaders";
+    texture_dir_ = path_ + "/textures";
 }
 
 std::shared_ptr<RenderPass> Interface::createRenderPass() {
@@ -44,6 +45,24 @@ std::shared_ptr<DescriptorSet> Interface::createDescriptorSet() {
 
 std::shared_ptr<UniformBuffer> Interface::createUniformBuffer(uint64_t size) {
     return std::make_shared<UniformBuffer>(size);
+}
+
+std::shared_ptr<DataTexture> Interface::createTexture(const uint8_t* data, uint32_t width, uint32_t height, uint32_t mip_levels) {
+    return std::make_shared<DataTexture>(data, width, height, mip_levels);
+}
+
+std::shared_ptr<ImageTexture> Interface::createTexture(const std::string& filename, uint32_t mip_levels) {
+    auto pos = filename.find_last_of('.') + 1;
+    auto filetype = filename.substr(pos, filename.size() - pos);
+    std::string filepath = texture_dir_ + "/" + filename;
+    if (filetype == "png" || filetype == "jpg") {
+        return std::make_shared<ImageTexture>(filepath, mip_levels);
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Sampler> Interface::createSampler(const SamplerOptions& options) {
+    return std::make_shared<Sampler>(options);
 }
 
 } // namespace wen

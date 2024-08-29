@@ -2,6 +2,8 @@
 
 #include "base/enums.hpp"
 #include "resources/descriptor/uniform_buffer.hpp"
+#include "resources/specific_texture.hpp"
+#include "resources/sampler.hpp"
 
 namespace wen {
 
@@ -31,6 +33,8 @@ public:
 
     void bindUniforms(uint32_t binding, const std::vector<std::shared_ptr<UniformBuffer>>& uniform_buffers);
     void bindUniform(uint32_t binding, std::shared_ptr<UniformBuffer> uniform_buffer);
+    void bindTextures(uint32_t binding, const std::vector<std::pair<std::shared_ptr<SpecificTexture>, std::shared_ptr<Sampler>>>& textures_samplers);
+    void bindTexture(uint32_t binding, std::shared_ptr<SpecificTexture> texture, std::shared_ptr<Sampler> sampler);
 
 private:
     std::vector<vk::DescriptorSetLayoutBinding> bindings_;

@@ -72,4 +72,35 @@ void DescriptorSet::bindUniform(uint32_t binding, std::shared_ptr<UniformBuffer>
     bindUniforms(binding, {uniform_buffer});
 }
 
+void DescriptorSet::bindTextures(uint32_t binding, const std::vector<std::pair<std::shared_ptr<SpecificTexture>, std::shared_ptr<Sampler>>>& textures_samplers) {
+    auto layout_binding = getBinding(binding);
+    if (layout_binding.descriptorType != vk::DescriptorType::eCombinedImageSampler) {
+        WEN_ERROR("binding {} is not combined image sampler!", binding)
+        return;
+    }
+    if (layout_binding.descriptorCount != textures_samplers.size()) {
+        WEN_ERROR("binding {} requires {} textures, but {} provided!", binding, layout_binding.descriptorCount, textures_samplers.size())
+        return;
+    }
+    for (uint32_t i = 0; i < renderer_config->max_frames_in_flight; i++) {
+        std::vector<vk::DescriptorImageInfo> images(layout_binding.descriptorCount);
+        for (uint32_t j = 0; j < layout_binding.descriptorCount; j++) {
+            images[j].setImageLayout(textures_samplers[j].first->getImageLayout())
+                .setImageView(textures_samplers[j].first->getImageView())
+                .setSampler(textures_samplers[j].second->sampler);
+        }
+        vk::WriteDescriptorSet write;
+        write.setDstSet(descriptor_sets_[i])
+            .setDstBinding(layout_binding.binding)
+            .setDstArrayElement(0)
+            .setDescriptorType(layout_binding.descriptorType)
+            .setImageInfo(images);
+        manager->device->device.updateDescriptorSets({write}, {});
+    }
+}
+
+void DescriptorSet::bindTexture(uint32_t binding, std::shared_ptr<SpecificTexture> texture, std::shared_ptr<Sampler> sampler) {
+    bindTextures(binding, {{texture, sampler}});
+}
+
 } // namespace wen

@@ -51,4 +51,35 @@ std::string readFile(const std::string& filename) {
     return result;
 }
 
+void transitionImageLayout(vk::Image image, vk::ImageAspectFlagBits aspect,
+                           uint32_t mip_levels, const TransitionInfo& src,
+                           const TransitionInfo& dst) {
+    vk::ImageMemoryBarrier barrier;
+    barrier.setOldLayout(src.layout)
+        .setSrcAccessMask(src.access)
+        .setNewLayout(dst.layout)
+        .setDstAccessMask(dst.access)
+        .setImage(image)
+        .setSubresourceRange({
+            aspect,
+            0,
+            mip_levels,
+            0,
+            1
+        })
+        .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
+        .setDstQueueFamilyIndex(vk::QueueFamilyIgnored);
+    
+    auto cmdbuf = manager->command_pool->allocateSingleUse();
+    cmdbuf.pipelineBarrier(
+        src.stage,
+        dst.stage,
+        vk::DependencyFlagBits::eByRegion,
+        nullptr,
+        nullptr,
+        barrier
+    );
+    manager->command_pool->freeSingleUse(cmdbuf);
+}
+
 } // namespace wen
