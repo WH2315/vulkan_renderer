@@ -1,5 +1,6 @@
 #include "wen.hpp"
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "core/imgui.hpp"
@@ -21,9 +22,11 @@ int main() {
 
     auto render_pass = interface->createRenderPass();
     render_pass->addAttachment("swapchain_image", wen::AttachmentType::eColor);
+    render_pass->addAttachment("depth", wen::AttachmentType::eDepth);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
     subpass.setOutputAttachment("swapchain_image");
+    subpass.setDepthAttachment("depth");
 
     render_pass->addSubpassDependency(
         "external_subpass",
@@ -54,12 +57,19 @@ int main() {
         glm::vec2 uv;
     };
     const std::vector<Vertex> vertices = {
-        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+        {{ 0.5f,  0.5f,  0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+        {{ 0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{-0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-0.5f, -0.5f,  0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+        {{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
     };
-    const std::vector<uint16_t> indices = {0, 1, 2, 1, 2, 3};
+    const std::vector<uint16_t> indices = {
+        0, 1, 2, 1, 2, 3,
+        4, 5, 6, 5, 6, 7,
+    };
 
     auto vertex_input = interface->createVertexInput({
         {
@@ -90,7 +100,7 @@ int main() {
     render_pipeline->setDescriptorSet(descriptor_set);
     render_pipeline->compile({
         .polygon_mode = vk::PolygonMode::eFill,
-        .depth_test_enable = false,
+        .depth_test_enable = true,
         .dynamic_states = {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor
@@ -99,6 +109,8 @@ int main() {
 
     struct UBO {
         glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 project;
     } ubo;
 
     auto uniform_buffer = interface->createUniformBuffer(sizeof(UBO));
@@ -131,7 +143,9 @@ int main() {
 
         renderer->setClearColor("swapchain_image", {{0.5f, 0.5f, 0.5f, 1.0f}});
 
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), 0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(-2.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.project = glm::perspective(glm::radians(45.0f), w / h, 0.1f, 10.0f);
         memcpy(uniform_buffer->getData(), &ubo, sizeof(UBO));
 
         renderer->beginRender();
