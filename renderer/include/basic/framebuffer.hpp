@@ -9,7 +9,7 @@ struct Attachment {
     ~Attachment();
 
     std::unique_ptr<Image> image;
-    vk::ImageView image_view = nullptr;
+    vk::ImageView image_view;
 };
 
 class Renderer;

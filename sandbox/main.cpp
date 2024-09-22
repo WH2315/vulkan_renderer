@@ -14,30 +14,30 @@ int main() {
     wen::renderer_config->debug = true;
     wen::renderer_config->app_name = "sandbox";
     wen::renderer_config->engine_name = "wen";
-    wen::renderer_config->sync = true;
+    wen::renderer_config->vsync = true;
 
     manager->initializeRenderer();
 
     auto interface = std::make_shared<wen::Interface>("sandbox/resources");
 
+    wen::renderer_config->setSampleCount(vk::SampleCountFlagBits::e64);
+
     auto render_pass = interface->createRenderPass();
-    render_pass->addAttachment("swapchain_image", wen::AttachmentType::eColor);
-    render_pass->addAttachment("depth", wen::AttachmentType::eDepth);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
-    subpass.setOutputAttachment("swapchain_image");
-    subpass.setDepthAttachment("depth");
+    subpass.setOutputAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT);
+    subpass.setDepthAttachment(wen::DEPTH_ATTACHMENT);
 
     render_pass->addSubpassDependency(
-        "external_subpass",
+        wen::EXTERNAL_SUBPASS,
         "main_subpass",
         {
-            vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eColorAttachmentOutput
+            vk::PipelineStageFlagBits::eColorAttachmentOutput|vk::PipelineStageFlagBits::eLateFragmentTests,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput|vk::PipelineStageFlagBits::eLateFragmentTests
         },
         {
-            vk::AccessFlagBits::eNone,
-            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
+            vk::AccessFlagBits::eColorAttachmentWrite|vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+            vk::AccessFlagBits::eColorAttachmentWrite|vk::AccessFlagBits::eDepthStencilAttachmentWrite
         }
     );
 
@@ -141,7 +141,7 @@ int main() {
         auto width = wen::renderer_config->getWidth(), height = wen::renderer_config->getHeight();
         auto w = static_cast<float>(width), h = static_cast<float>(height);
 
-        renderer->setClearColor("swapchain_image", {{0.5f, 0.5f, 0.5f, 1.0f}});
+        renderer->setClearColor(wen::SWAPCHAIN_IMAGE_ATTACHMENT, {{0.5f, 0.5f, 0.5f, 1.0f}});
 
         ubo.model = glm::rotate(glm::mat4(1.0f), 0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(-2.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

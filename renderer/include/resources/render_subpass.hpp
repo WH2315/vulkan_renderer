@@ -24,9 +24,10 @@ private:
     RenderPass& render_pass_;
     std::vector<vk::AttachmentReference> output_attachments_;
     std::optional<vk::AttachmentReference> depth_attachment_;
+    std::vector<vk::AttachmentReference> resolve_attachments_;
 
 private:
-    vk::AttachmentReference createAttachmentReference(const std::string& name, vk::ImageLayout layout);
+    vk::AttachmentReference createAttachmentReference(const std::string& name, vk::ImageLayout layout, bool read);
 };
 
 } // namespace wen

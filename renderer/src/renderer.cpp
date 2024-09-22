@@ -155,7 +155,7 @@ void Renderer::endRender() {
 }
 
 void Renderer::setClearColor(const std::string& name, const vk::ClearValue& value) {
-    uint32_t index = render_pass->getAttachmentIndex(name);
+    uint32_t index = render_pass->getAttachmentIndex(name, false);
     render_pass->attachments[index].clear_color = value;
 }
 

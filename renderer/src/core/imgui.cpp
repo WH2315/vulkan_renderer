@@ -42,7 +42,7 @@ Imgui::Imgui(Renderer& renderer) : renderer_(renderer) {
 
     std::string src = renderer.render_pass->subpasses.back()->name;
     auto& subpass = renderer.render_pass->addSubpass("imgui_subpass");
-    subpass.setOutputAttachment("swapchain_image"); 
+    subpass.setOutputAttachment(SWAPCHAIN_IMAGE_ATTACHMENT); 
     renderer.render_pass->addSubpassDependency(
         src,
         "imgui_subpass",
@@ -74,7 +74,7 @@ Imgui::Imgui(Renderer& renderer) : renderer_(renderer) {
     init_info.Subpass = renderer.render_pass->subpasses.size() - 1;
     init_info.MinImageCount = manager->swapchain->image_count;
     init_info.ImageCount = manager->swapchain->image_count;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.MSAASamples = static_cast<VkSampleCountFlagBits>(renderer_config->getSampleCount());
     init_info.Allocator = nullptr;
     init_info.CheckVkResultFn = [](VkResult result) {
         if (result != VK_SUCCESS) {

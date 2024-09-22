@@ -4,9 +4,13 @@
 
 namespace wen {
 
+const std::string SWAPCHAIN_IMAGE_ATTACHMENT = "swapchain_image_attachment";
+const std::string DEPTH_ATTACHMENT = "depth_attachment";
+const std::string EXTERNAL_SUBPASS = "external_subpass";
+
 enum class ShaderStage {
-    eVertex = static_cast<uint32_t>(vk::ShaderStageFlagBits::eVertex),
-    eFragment = static_cast<uint32_t>(vk::ShaderStageFlagBits::eFragment),
+    eVertex,
+    eFragment,
 };
 
 enum class AttachmentType {

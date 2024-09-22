@@ -7,8 +7,8 @@ Interface::Interface(const std::string& path) : path_(path) {
     texture_dir_ = path_ + "/textures";
 }
 
-std::shared_ptr<RenderPass> Interface::createRenderPass() {
-    return std::make_shared<RenderPass>();
+std::shared_ptr<RenderPass> Interface::createRenderPass(bool auto_load) {
+    return std::make_shared<RenderPass>(auto_load);
 }
 
 std::shared_ptr<Renderer> Interface::createRenderer(std::shared_ptr<RenderPass> render_pass) {

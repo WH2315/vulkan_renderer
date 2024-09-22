@@ -3,11 +3,8 @@
 
 namespace wen {
 
-RenderPipeline::RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name) {
-    renderer_ = renderer;
-    shader_program_ = shader_program;
-    subpass_name_ = subpass_name;
-}
+RenderPipeline::RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name)
+    : renderer_(renderer), shader_program_(shader_program), subpass_name_(subpass_name) {}
 
 RenderPipeline::~RenderPipeline() {
     descriptor_sets.clear();
@@ -72,9 +69,9 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
     
     // 6. multisample
     vk::PipelineMultisampleStateCreateInfo multisample = {};
-    multisample.setSampleShadingEnable(false)
-        .setRasterizationSamples(vk::SampleCountFlagBits::e1)
-        .setMinSampleShading(1.0f)
+    multisample.setSampleShadingEnable(true)
+        .setRasterizationSamples(renderer_config->getSampleCount())
+        .setMinSampleShading(0.2f)
         .setPSampleMask(nullptr)
         .setAlphaToCoverageEnable(false)
         .setAlphaToOneEnable(false);

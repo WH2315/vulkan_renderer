@@ -31,7 +31,7 @@ Swapchain::Swapchain() {
     if (renderer_config->desired_mode.has_value()) {
         desired_mode = renderer_config->desired_mode.value();
     } else {
-        if (renderer_config->sync) {
+        if (renderer_config->vsync) {
             desired_mode = vk::PresentModeKHR::eFifo;
         } else {
             desired_mode = vk::PresentModeKHR::eMailbox;

@@ -28,4 +28,6 @@ vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates,
                                vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 vk::Format findDepthFormat();
 
+vk::SampleCountFlagBits getMaxUsableSampleCount();
+
 } // namespace wen

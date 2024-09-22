@@ -19,7 +19,7 @@ class Interface {
 public:
     Interface(const std::string& path);
 
-    std::shared_ptr<RenderPass> createRenderPass();
+    std::shared_ptr<RenderPass> createRenderPass(bool auto_load = true);
     std::shared_ptr<Renderer> createRenderer(std::shared_ptr<RenderPass> render_pass);
     std::shared_ptr<Shader> loadShader(const std::string& filename, ShaderStage stage);
     std::shared_ptr<ShaderProgram> createShaderProgram();
