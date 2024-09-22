@@ -13,8 +13,13 @@ layout(binding = 0) uniform UBO {
     mat4 project;
 } ubo;
 
+layout(push_constant) uniform PushConstants {
+    float pad;
+    vec3 offset;
+} pc;
+
 void main() {
-    gl_Position = ubo.project * ubo.view * ubo.model * vec4(positions, 1.0);
+    gl_Position = ubo.project * ubo.view * ubo.model * vec4(positions + pc.offset, 1.0);
     frag_color = colors;
     frag_uv = uvs;
 }

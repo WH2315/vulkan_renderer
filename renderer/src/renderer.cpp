@@ -173,6 +173,13 @@ void Renderer::bindDescriptorSets(const std::shared_ptr<RenderPipeline>& render_
     }
 }
 
+void Renderer::pushConstants(const std::shared_ptr<RenderPipeline>& render_pipeline) {
+    if (render_pipeline->push_constants.has_value()) {
+        auto push_constants = render_pipeline->push_constants.value();
+        current_buffer_.pushConstants(render_pipeline->pipeline_layout, push_constants->range.stageFlags, 0, push_constants->total_size, push_constants->constants.data());
+    }
+}
+
 void Renderer::setViewport(float x, float y, float width, float height) {
     vk::Viewport viewport{x, y, width, height, 0.0f, 1.0f};
     current_buffer_.setViewport(0, {viewport});

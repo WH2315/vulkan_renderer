@@ -95,9 +95,21 @@ int main() {
     });
     descriptor_set->build();
 
+    auto push_constants = interface->createPushConstants(
+        wen::ShaderStage::eVertex,
+        {
+            {"pad", wen::ConstantType::eFloat},
+            {"offset", wen::ConstantType::eFloat3}
+        }
+    );
+
+    glm::vec3 offset = {1.0f, 0.0f, 0.0f};
+    push_constants->pushConstant("offset", &offset);
+
     auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
     render_pipeline->setVertexInput(vertex_input);
     render_pipeline->setDescriptorSet(descriptor_set);
+    render_pipeline->setPushConstants(push_constants);
     render_pipeline->compile({
         .polygon_mode = vk::PolygonMode::eFill,
         .depth_test_enable = true,
@@ -151,6 +163,7 @@ int main() {
         renderer->beginRender();
         renderer->bindPipeline(render_pipeline);
         renderer->bindDescriptorSets(render_pipeline);
+        renderer->pushConstants(render_pipeline);
         renderer->setViewport(0, h, w, -h);
         renderer->setScissor(0, 0, width, height);
         renderer->bindVertexBuffer(vertex_buffer);
@@ -170,6 +183,7 @@ int main() {
     texture.reset();
     uniform_buffer.reset();
     render_pipeline.reset();
+    push_constants.reset();
     descriptor_set.reset();
     index_buffer.reset();
     vertex_buffer.reset();

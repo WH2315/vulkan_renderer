@@ -26,6 +26,10 @@ void RenderPipeline::setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_
     descriptor_sets[index] = std::move(descriptor_set);
 }
 
+void RenderPipeline::setPushConstants(std::shared_ptr<PushConstants> push_constants) {
+    this->push_constants = std::move(push_constants);
+}
+
 void RenderPipeline::compile(const RenderPipelineOptions& options) {
     // 1. shader stages
     std::vector<vk::PipelineShaderStageCreateInfo> shader_stages = {
@@ -147,8 +151,11 @@ void RenderPipeline::createPipelineLayout() {
         }
     }
 
-    create_info.setSetLayouts(descriptor_set_layouts)
-        .setPushConstantRanges(nullptr);
+    create_info.setSetLayouts(descriptor_set_layouts);
+
+    if (push_constants.has_value()) {
+        create_info.setPushConstantRanges(push_constants.value()->range);
+    }
     
     pipeline_layout = manager->device->device.createPipelineLayout(create_info);
 }

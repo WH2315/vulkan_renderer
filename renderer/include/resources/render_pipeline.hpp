@@ -4,6 +4,7 @@
 #include "renderer.hpp"
 #include "resources/vertex_input/vertex_input.hpp"
 #include "resources/descriptor/descriptor_set.hpp"
+#include "resources/push_constants/push_constants.hpp"
 
 namespace wen {
 
@@ -21,6 +22,7 @@ public:
 
     void setVertexInput(std::shared_ptr<VertexInput> vertex_input);
     void setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index = 0);
+    void setPushConstants(std::shared_ptr<PushConstants> push_constants);
 
     void compile(const RenderPipelineOptions& options = {});
 
@@ -28,6 +30,7 @@ public:
     vk::PipelineLayout pipeline_layout;
     vk::Pipeline pipeline;
     std::vector<std::optional<std::shared_ptr<DescriptorSet>>> descriptor_sets;
+    std::optional<std::shared_ptr<PushConstants>> push_constants;
 
 private:
     std::weak_ptr<Renderer> renderer_;
