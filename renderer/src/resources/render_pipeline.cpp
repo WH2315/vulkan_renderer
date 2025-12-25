@@ -1,4 +1,5 @@
 #include "resources/render_pipeline.hpp"
+#include "renderer.hpp"
 #include "manager.hpp"
 
 namespace wen {

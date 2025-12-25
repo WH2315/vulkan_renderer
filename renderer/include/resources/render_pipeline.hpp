@@ -1,10 +1,10 @@
 #pragma once
 
 #include "resources/shader_program.hpp"
-#include "renderer.hpp"
 #include "resources/vertex_input/vertex_input.hpp"
 #include "resources/descriptor/descriptor_set.hpp"
 #include "resources/push_constants/push_constants.hpp"
+#include <memory>
 
 namespace wen {
 
@@ -15,6 +15,7 @@ struct RenderPipelineOptions {
     std::vector<vk::DynamicState> dynamic_states = {};
 };
 
+class Renderer;
 class RenderPipeline {
 public:
     RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name);

@@ -3,6 +3,7 @@
 #include "resources/render_subpass.hpp"
 #include "base/enums.hpp"
 #include <map>
+#include <memory>
 
 namespace wen {
 

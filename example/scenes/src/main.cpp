@@ -1,0 +1,39 @@
+#include "scenes/shader_toy.hpp"
+
+int main() {
+    wen::Manager* manager = new wen::Manager;
+
+    manager->initializeEngine();
+
+    wen::renderer_config->window_info = {"sandbox", 900, 900};
+    wen::renderer_config->debug = true;
+    wen::renderer_config->app_name = "sandbox";
+    wen::renderer_config->engine_name = "wen";
+    wen::renderer_config->vsync = true;
+
+    manager->initializeRenderer();
+
+    auto interface = std::make_shared<wen::Interface>("example/scenes/resources");
+
+    wen::renderer_config->setSampleCount(vk::SampleCountFlagBits::e1);
+
+    auto scene_manager = std::make_unique<SceneManager>(interface);
+
+    scene_manager->setScene<ShaderToy>();
+
+    while (!manager->shouldClose()) {
+        manager->pollEvents();
+        scene_manager->update();
+        scene_manager->render();
+    }
+
+    scene_manager.reset();
+    interface.reset();
+
+    manager->destroyRenderer();
+    manager->destroyEngine();
+
+    delete manager;
+
+    return 0;
+}

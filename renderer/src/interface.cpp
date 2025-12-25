@@ -65,8 +65,8 @@ std::shared_ptr<Sampler> Interface::createSampler(const SamplerOptions& options)
     return std::make_shared<Sampler>(options);
 }
 
-std::shared_ptr<PushConstants> Interface::createPushConstants(ShaderStage stage, const std::list<std::pair<std::string, ConstantType>>& infos) {
-    return std::make_shared<PushConstants>(stage, infos);
+std::shared_ptr<PushConstants> Interface::createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos) {
+    return std::make_shared<PushConstants>(stages, infos);
 }
 
 } // namespace wen

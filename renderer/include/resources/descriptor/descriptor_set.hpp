@@ -8,13 +8,13 @@
 namespace wen {
 
 struct DescriptorSetLayoutBinding {
-    DescriptorSetLayoutBinding(uint32_t binding, vk::DescriptorType descriptor_type, ShaderStage stage)
+    DescriptorSetLayoutBinding(uint32_t binding, vk::DescriptorType descriptor_type, ShaderStages stage)
         : binding(binding), descriptor_type(descriptor_type), descriptor_count(1), stage(stage), samples(nullptr) {}
 
     uint32_t binding;
     vk::DescriptorType descriptor_type;
     uint32_t descriptor_count;
-    ShaderStage stage;
+    ShaderStages stage;
     const vk::Sampler* samples;
 };
 

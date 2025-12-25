@@ -2,6 +2,7 @@
 
 #include "resources/specific_buffer.hpp"
 #include "base/enums.hpp"
+#include <memory>
 
 namespace wen {
 

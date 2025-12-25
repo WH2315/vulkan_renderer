@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/shader.hpp"
+#include <memory>
 
 namespace wen {
 

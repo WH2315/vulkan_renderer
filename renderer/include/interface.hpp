@@ -33,7 +33,7 @@ public:
     std::shared_ptr<DataTexture> createTexture(const uint8_t* data, uint32_t width, uint32_t height, uint32_t mip_levels = 0);
     std::shared_ptr<ImageTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
     std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
-    std::shared_ptr<PushConstants> createPushConstants(ShaderStage stage, const std::list<std::pair<std::string, ConstantType>>& infos);
+    std::shared_ptr<PushConstants> createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos);
 
 private:
     std::string path_;

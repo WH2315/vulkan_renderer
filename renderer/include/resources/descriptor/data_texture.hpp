@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/specific_texture.hpp"
+#include <memory>
 
 namespace wen {
 

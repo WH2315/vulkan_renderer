@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/descriptor/data_texture.hpp"
+#include <memory>
 
 namespace wen {
 

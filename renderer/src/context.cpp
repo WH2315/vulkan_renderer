@@ -2,7 +2,6 @@
 #include "core/log.hpp"
 #include "base/configuration.hpp"
 #include <map>
-#include "vk_call.hpp"
 
 namespace wen {
 

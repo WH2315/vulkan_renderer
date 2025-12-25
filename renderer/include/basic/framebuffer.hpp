@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/image.hpp"
+#include <memory>
 
 namespace wen {
 

@@ -5,6 +5,7 @@
 #include "basic/command_pool.hpp"
 #include "basic/descriptor_pool.hpp"
 #include <vk_mem_alloc.h>
+#include <memory>
 
 namespace wen {
 

@@ -4,7 +4,7 @@
 
 namespace wen {
 
-PushConstants::PushConstants(ShaderStage stage, const std::list<std::pair<std::string, ConstantType>>& infos) {
+PushConstants::PushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos) {
     total_size = 0;
     for (const auto info : infos) {
         uint32_t size = convert<uint32_t>(info.second);
@@ -21,7 +21,7 @@ PushConstants::PushConstants(ShaderStage stage, const std::list<std::pair<std::s
         sizes_.insert(std::make_pair(info.first, size));
         total_size += size;
     }
-    range.setStageFlags(convert<vk::ShaderStageFlags>(stage))
+    range.setStageFlags(convert<vk::ShaderStageFlags>(stages))
         .setOffset(0)
         .setSize(total_size);
     constants.resize(total_size);
