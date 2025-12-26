@@ -5,6 +5,7 @@
 #include "resources/vertex_input/vertex_buffer.hpp"
 #include "resources/vertex_input/index_buffer.hpp"
 #include "resources/framebuffer_set.hpp"
+#include "resources/normal_model.hpp"
 
 namespace wen {
 
@@ -34,6 +35,8 @@ public:
     void bindIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer);
     void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
     void drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance);
+    void drawModel(const std::shared_ptr<NormalModel>& model, uint32_t instance_count, uint32_t first_instance);
+    void drawMesh(const std::shared_ptr<Mesh>& mesh, uint32_t instance_count, uint32_t first_instance);
     void nextSubpass();
     void nextSubpass(const std::string& name);
 

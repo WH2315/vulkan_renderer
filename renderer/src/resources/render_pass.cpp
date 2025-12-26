@@ -80,14 +80,14 @@ void RenderPass::addAttachment(const std::string& name, AttachmentType type) {
             break;
     }
 
-    static bool first = true;
-    if (first) {
+    // Ensure the swapchain color attachment resolves to PRESENT so queue present is valid.
+    if (name == SWAPCHAIN_IMAGE_ATTACHMENT) {
         if (renderer_config->msaa()) {
-            resolve_attachments[0].attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+            // With MSAA we store swapchain resolve at index 0.
+            resolve_attachments.back().attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
         } else {
-            attachments[0].attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+            attachments.back().attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
         }
-        first = false;
     }
 }
 

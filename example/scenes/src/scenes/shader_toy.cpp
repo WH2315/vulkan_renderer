@@ -59,6 +59,9 @@ void ShaderToy::initialize() {
     });
     descriptor_set->build();
 
+    input_ = std::make_unique<ShaderToyInput>(*interface);
+    descriptor_set->bindUniform(0, input_->uniform_buffer);
+
     // push constants
     push_constants_ = interface->createPushConstants(
         wen::ShaderStage::eVertex | wen::ShaderStage::eFragment,
@@ -74,12 +77,9 @@ void ShaderToy::initialize() {
     render_pipeline_->setDescriptorSet(descriptor_set);
     render_pipeline_->setPushConstants(push_constants_);
     render_pipeline_->compile({
-        .depth_test_enable = false,
+        .depth_test_enable = true,
         .dynamic_states = {vk::DynamicState::eViewport, vk::DynamicState::eScissor}
     });
-
-    input_ = std::make_unique<ShaderToyInput>(*interface);
-    descriptor_set->bindUniform(0, input_->uniform_buffer);
 }
 
 void ShaderToy::update(float ts) {
@@ -90,10 +90,10 @@ void ShaderToy::update(float ts) {
     push_constants_->pushConstant("height", &h);
 
     time_ += ts;
-    input_->data->iTimeDelta = ts;
-    input_->data->iTime = time_;
-    input_->data->iFrameRate = ImGui::GetIO().Framerate;
     input_->data->iResolution = glm::vec3(w, h, 1.0f);
+    input_->data->iTime = time_;
+    input_->data->iTimeDelta = ts;
+    input_->data->iFrameRate = ImGui::GetIO().Framerate;
 }
 
 void ShaderToy::render() {

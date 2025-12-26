@@ -216,6 +216,20 @@ void Renderer::drawIndexed(uint32_t index_count, uint32_t instance_count, uint32
     current_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
+void Renderer::drawModel(const std::shared_ptr<NormalModel>& model,
+                         uint32_t instance_count, uint32_t first_instance) {
+    current_buffer_.drawIndexed(model->index_count, instance_count,
+                                model->offset().index, model->offset().vertex,
+                                first_instance);
+}
+
+void Renderer::drawMesh(const std::shared_ptr<Mesh>& mesh, uint32_t instance_count,
+                        uint32_t first_instance) {
+    current_buffer_.drawIndexed(mesh->indices.size(), instance_count,
+                                mesh->offset.index, mesh->offset.vertex,
+                                first_instance);
+}
+
 void Renderer::nextSubpass() {
     current_buffer_.nextSubpass(vk::SubpassContents::eInline);
     current_subpass_++;

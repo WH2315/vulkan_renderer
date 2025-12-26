@@ -2,6 +2,9 @@
 
 #include <wen.hpp>
 #include <glm/glm.hpp>
+#include <functional>
+#include <string>
+#include <vector>
 #include "core/imgui.hpp"
 
 class Scene {
@@ -31,15 +34,29 @@ public:
     ~SceneManager();
 
     template <class Scene>
-    void setScene() {
-        scene_ = std::make_unique<Scene>(interface_);
-        scene_->initialize();
+    void addScene(const std::string& name) {
+        scenes_.push_back(
+            {name, [this]() { return std::make_unique<Scene>(interface_); }});
     }
+
+    void setActiveScene(const std::string& name);
 
     void update();
     void render();
 
 private:
+    struct SceneEntry {
+        std::string name;
+        std::function<std::unique_ptr<Scene>()> factory;
+    };
+
+    void applyPendingSceneChange();
+    void switchToScene(int index);
+    void renderSceneSelector();
+
     std::shared_ptr<wen::Interface> interface_;
     std::unique_ptr<Scene> scene_;
+    std::vector<SceneEntry> scenes_;
+    int active_scene_index_ = -1;
+    int pending_scene_index_ = -1;
 };

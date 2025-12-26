@@ -13,6 +13,7 @@
 #include "resources/descriptor/image_texture.hpp"
 #include "resources/sampler.hpp"
 #include "resources/push_constants/push_constants.hpp"
+#include "resources/normal_model.hpp"
 
 namespace wen {
 
@@ -34,11 +35,13 @@ public:
     std::shared_ptr<ImageTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
     std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
     std::shared_ptr<PushConstants> createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos);
+    std::shared_ptr<NormalModel> loadNormalModel(const std::string& filename);
 
 private:
     std::string path_;
     std::string shader_dir_;
     std::string texture_dir_;
+    std::string model_dir_;
 };
 
 } // namespace wen
