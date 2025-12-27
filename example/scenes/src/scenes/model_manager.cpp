@@ -82,6 +82,7 @@ void ModelManager::initialize() {
 
 void ModelManager::update(float ts, float w, float h) {
     camera_->setViewportSize(w, h);
+    camera_->upload();
     camera_->update(ts);
 }
 

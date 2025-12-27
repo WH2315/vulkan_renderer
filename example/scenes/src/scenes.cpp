@@ -35,6 +35,8 @@ void SceneManager::switchToScene(int index) {
     active_scene_index_ = index;
     scene_ = scenes_[index].factory();
     scene_->initialize();
+    scene_->viewport_size = {static_cast<float>(wen::renderer_config->getWidth()),
+                             static_cast<float>(wen::renderer_config->getHeight())};
 }
 
 void SceneManager::setActiveScene(const std::string& name) {
@@ -53,14 +55,6 @@ void SceneManager::update() {
     }
 
     applyPendingSceneChange();
-
-    if (scene_) {
-        auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
-        auto framebuffer_h = static_cast<float>(wen::renderer_config->getHeight());
-        auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
-        auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
-        scene_->update(ImGui::GetIO().DeltaTime, viewport_w, viewport_h);
-    }
 }
 
 void SceneManager::render() {
@@ -100,13 +94,11 @@ void SceneManager::render() {
     scene_->renderer->acquireNextImage();
     scene_->renderer->beginRenderPass();
 
-    auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
-    auto framebuffer_h = static_cast<float>(wen::renderer_config->getHeight());
-    auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
-    auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
-    scene_->render(viewport_w, viewport_h);
+    float dt = ImGui::GetIO().DeltaTime;
+    const auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
+    const auto framebuffer_h = static_cast<float>(wen::renderer_config->getHeight());
 
-    scene_->imGui->begin();
+    scene_->imGui->newFrame();
 
     auto* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -127,8 +119,8 @@ void SceneManager::render() {
     // render Scene Manager UI
     const char* current =
         active_scene_index_ >= 0 ? scenes_[active_scene_index_].name.c_str() : "(none)";
-    bool open = ImGui::Begin("Scene Manager");
-    if (open) {
+    bool scene_manager_open = ImGui::Begin("Scene Manager");
+    if (scene_manager_open) {
         if (ImGui::BeginCombo("Active Scene", current)) {
             for (int i = 0; i < static_cast<int>(scenes_.size()); ++i) {
                 bool selected = (i == active_scene_index_);
@@ -146,19 +138,25 @@ void SceneManager::render() {
     // render Settings UI
     scene_->imgui();
     // render Viewport UI
-    ImGui::Begin("Viewport");
-    auto viewport_available = ImGui::GetContentRegionAvail();
-    scene_->viewport_size.x = std::max(1.0f, viewport_available.x);
-    scene_->viewport_size.y = std::max(1.0f, viewport_available.y);
-    ImVec2 uv1{std::min(scene_->viewport_size.x / framebuffer_w, 1.0f),
-               std::min(scene_->viewport_size.y / framebuffer_h, 1.0f)};
-    ImGui::Image(image, ImVec2{scene_->viewport_size.x, scene_->viewport_size.y},
-                 ImVec2{0.0f, 0.0f}, uv1);
+    bool viewport_open = ImGui::Begin("Viewport");
+    if (viewport_open) {
+        auto viewport_available = ImGui::GetContentRegionAvail();
+        scene_->viewport_size.x = std::max(1.0f, viewport_available.x);
+        scene_->viewport_size.y = std::max(1.0f, viewport_available.y);
+        auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
+        auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
+        scene_->update(dt, viewport_w, viewport_h);
+        scene_->render(viewport_w, viewport_h);
+        ImVec2 uv1{std::min(viewport_w / framebuffer_w, 1.0f),
+                   std::min(viewport_h / framebuffer_h, 1.0f)};
+        ImGui::Image(image, ImVec2{scene_->viewport_size.x, scene_->viewport_size.y},
+                     ImVec2{0.0f, 0.0f}, uv1);
+    }
     ImGui::End();
 
     ImGui::End();
 
-    scene_->imGui->end();
+    scene_->imGui->renderFrame();
 
     scene_->renderer->endRenderPass();
     scene_->renderer->present();

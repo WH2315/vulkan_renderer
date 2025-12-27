@@ -151,7 +151,7 @@ int main() {
         renderer->bindIndexBuffer(index_buffer);
         renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
 
-        imgui->begin();
+        imgui->newFrame();
 
         auto* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -179,7 +179,7 @@ int main() {
 
         ImGui::End();
 
-        imgui->end();
+        imgui->renderFrame();
 
         renderer->endRenderPass();
         renderer->present();
