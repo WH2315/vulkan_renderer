@@ -1,4 +1,6 @@
 #include "scenes.hpp"
+#include <backends/imgui_impl_vulkan.h>
+#include <algorithm>
 
 void SceneManager::applyPendingSceneChange() {
     if (pending_scene_index_ < 0 ||
@@ -20,6 +22,12 @@ void SceneManager::switchToScene(int index) {
 
     if (scene_) {
         scene_->renderer->waitIdle();
+        if (image != VK_NULL_HANDLE) {
+            ImGui_ImplVulkan_RemoveTexture(image);
+            image = VK_NULL_HANDLE;
+            last_view = VK_NULL_HANDLE;
+            last_sampler = VK_NULL_HANDLE;
+        }
         scene_->destroy();
         scene_.reset();
     }
@@ -39,30 +47,6 @@ void SceneManager::setActiveScene(const std::string& name) {
     }
 }
 
-void SceneManager::renderSceneSelector() {
-    if (scenes_.empty()) {
-        return;
-    }
-
-    const char* current =
-        active_scene_index_ >= 0 ? scenes_[active_scene_index_].name.c_str() : "(none)";
-    if (ImGui::Begin("Scene Manager")) {
-        if (ImGui::BeginCombo("Active Scene", current)) {
-            for (int i = 0; i < static_cast<int>(scenes_.size()); ++i) {
-                bool selected = (i == active_scene_index_);
-                if (ImGui::Selectable(scenes_[i].name.c_str(), selected)) {
-                    pending_scene_index_ = i;
-                }
-                if (selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-            ImGui::EndCombo();
-        }
-        ImGui::End();
-    }
-}
-
 void SceneManager::update() {
     if (!scene_ && !scenes_.empty()) {
         switchToScene(0);
@@ -71,7 +55,11 @@ void SceneManager::update() {
     applyPendingSceneChange();
 
     if (scene_) {
-        scene_->update(ImGui::GetIO().DeltaTime);
+        auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
+        auto framebuffer_h = static_cast<float>(wen::renderer_config->getHeight());
+        auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
+        auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
+        scene_->update(ImGui::GetIO().DeltaTime, viewport_w, viewport_h);
     }
 }
 
@@ -80,16 +68,43 @@ void SceneManager::render() {
         return;
     }
 
+    if (!docking_sampler_) {
+        docking_sampler_ = interface_->createSampler(
+            {.mag_filter = vk::Filter::eLinear,
+             .min_filter = vk::Filter::eLinear,
+             .address_mode_u = vk::SamplerAddressMode::eClampToEdge,
+             .address_mode_v = vk::SamplerAddressMode::eClampToEdge,
+             .address_mode_w = vk::SamplerAddressMode::eClampToEdge,
+             .border_color = vk::BorderColor::eFloatOpaqueBlack,
+             .mipmap_mode = vk::SamplerMipmapMode::eLinear,
+             .mip_levels = 1});
+    }
+
     VkImageView view =
         scene_->renderer->framebuffer_set->attachments
             .at(scene_->renderer->render_pass->getAttachmentIndex(
                 wen::IMGUI_DOCKING_ATTACHMENT, wen::renderer_config->msaa()))
             ->image_view;
 
+    if (image == VK_NULL_HANDLE || view != last_view ||
+        docking_sampler_->sampler != last_sampler) {
+        if (image != VK_NULL_HANDLE) {
+            ImGui_ImplVulkan_RemoveTexture(image);
+        }
+        image = ImGui_ImplVulkan_AddTexture(docking_sampler_->sampler, view,
+                                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        last_view = view;
+        last_sampler = docking_sampler_->sampler;
+    }
+
     scene_->renderer->acquireNextImage();
     scene_->renderer->beginRenderPass();
 
-    scene_->render();
+    auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
+    auto framebuffer_h = static_cast<float>(wen::renderer_config->getHeight());
+    auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
+    auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
+    scene_->render(viewport_w, viewport_h);
 
     scene_->imGui->begin();
 
@@ -109,10 +124,39 @@ void SceneManager::render() {
     ImGui::PopStyleVar(3);
     ImGui::DockSpace(ImGui::GetID("DockSpace"), {0.0f, 0.0f}, 0, nullptr);
 
-    // Scene Manager UI
-    renderSceneSelector();
+    // render Scene Manager UI
+    const char* current =
+        active_scene_index_ >= 0 ? scenes_[active_scene_index_].name.c_str() : "(none)";
+    bool open = ImGui::Begin("Scene Manager");
+    if (open) {
+        if (ImGui::BeginCombo("Active Scene", current)) {
+            for (int i = 0; i < static_cast<int>(scenes_.size()); ++i) {
+                bool selected = (i == active_scene_index_);
+                if (ImGui::Selectable(scenes_[i].name.c_str(), selected)) {
+                    pending_scene_index_ = i;
+                }
+                if (selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+    ImGui::End();
+    // render Settings UI
+    scene_->imgui();
+    // render Viewport UI
+    ImGui::Begin("Viewport");
+    auto viewport_available = ImGui::GetContentRegionAvail();
+    scene_->viewport_size.x = std::max(1.0f, viewport_available.x);
+    scene_->viewport_size.y = std::max(1.0f, viewport_available.y);
+    ImVec2 uv1{std::min(scene_->viewport_size.x / framebuffer_w, 1.0f),
+               std::min(scene_->viewport_size.y / framebuffer_h, 1.0f)};
+    ImGui::Image(image, ImVec2{scene_->viewport_size.x, scene_->viewport_size.y},
+                 ImVec2{0.0f, 0.0f}, uv1);
+    ImGui::End();
 
-    // scene_->imgui();
+    ImGui::End();
 
     scene_->imGui->end();
 
@@ -123,8 +167,21 @@ void SceneManager::render() {
 SceneManager::~SceneManager() {
     if (scene_) {
         scene_->renderer->waitIdle();
+        if (image != VK_NULL_HANDLE) {
+            ImGui_ImplVulkan_RemoveTexture(image);
+            image = VK_NULL_HANDLE;
+            last_view = VK_NULL_HANDLE;
+            last_sampler = VK_NULL_HANDLE;
+        }
         scene_->destroy();
         scene_.reset();
     }
+    if (image != VK_NULL_HANDLE) {
+        ImGui_ImplVulkan_RemoveTexture(image);
+        image = VK_NULL_HANDLE;
+        last_view = VK_NULL_HANDLE;
+        last_sampler = VK_NULL_HANDLE;
+    }
+    docking_sampler_.reset();
     interface_.reset();
 }

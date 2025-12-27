@@ -20,9 +20,9 @@ public:
     ModelManager(std::shared_ptr<wen::Interface> interface) : Scene(interface) {}
 
     void initialize() override;
-    void update(float ts) override;
-    void render() override;
-    void imgui(VkDescriptorSet image) override;
+    void update(float ts, float w, float h) override;
+    void render(float w, float h) override;
+    void imgui() override;
     void destroy() override;
 
 private:

@@ -9,7 +9,7 @@ void ModelManager::initialize() {
                                wen::AttachmentType::eRGBA8Unorm);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
-    subpass.setOutputAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT);
+    subpass.setOutputAttachment(wen::IMGUI_DOCKING_ATTACHMENT);
     subpass.setDepthAttachment(wen::DEPTH_ATTACHMENT);
 
     render_pass->addSubpassDependency(
@@ -65,6 +65,7 @@ void ModelManager::initialize() {
     descriptor_set->build();
 
     camera_ = std::make_unique<Camera>();
+    camera_->setViewportSize(viewport_size.x, viewport_size.y);
     camera_->setInitialState({0.0f, 0.0f, -3.0f}, {0.0f, 0.0f, 1.0f});
     descriptor_set->bindUniform(0, camera_->uniform_buffer);
 
@@ -79,22 +80,20 @@ void ModelManager::initialize() {
     });
 }
 
-void ModelManager::update(float ts) {
+void ModelManager::update(float ts, float w, float h) {
+    camera_->setViewportSize(w, h);
     camera_->update(ts);
 }
 
-void ModelManager::render() {
-    renderer->setClearColor(wen::SWAPCHAIN_IMAGE_ATTACHMENT,
+void ModelManager::render(float w, float h) {
+    renderer->setClearColor(wen::IMGUI_DOCKING_ATTACHMENT,
                             {
                                 {0.3f, 0.8f, 1.0f, 1.0f}
     });
-    auto width = wen::renderer_config->getWidth(),
-         height = wen::renderer_config->getHeight();
-    auto w = static_cast<float>(width), h = static_cast<float>(height);
     renderer->bindPipeline(render_pipeline_);
     renderer->bindDescriptorSets(render_pipeline_);
     renderer->setViewport(0, h, w, -h);
-    renderer->setScissor(0, 0, w, h);
+    renderer->setScissor(0, 0, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
     renderer->bindVertexBuffer(vertex_buffer_);
     renderer->bindIndexBuffer(index_buffer_);
     for (auto& [filename, info] : models_) {
@@ -110,7 +109,7 @@ void ModelManager::render() {
     }
 }
 
-void ModelManager::imgui(VkDescriptorSet image) {
+void ModelManager::imgui() {
     ImGui::Begin("Settings");
 
     ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
@@ -214,10 +213,6 @@ void ModelManager::imgui(VkDescriptorSet image) {
         ImGui::Separator();
     }
     ImGui::PopStyleVar();
-
-    ImGui::End();
-    ImGui::Image(image, ImGui::GetContentRegionAvail());
-    ImGui::Begin("Viewport");
 
     ImGui::End();
 }
