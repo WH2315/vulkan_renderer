@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+#include <algorithm>
 
 namespace {
 glm::vec2 s_last_cursor{0.0f, 0.0f};
@@ -12,6 +13,8 @@ bool s_space_down = false;
 
 Camera::Camera() {
     uniform_buffer = std::make_shared<wen::UniformBuffer>(sizeof(CameraData));
+    setViewportSize(static_cast<float>(wen::renderer_config->getWidth()),
+                    static_cast<float>(wen::renderer_config->getHeight()));
     reset();
 }
 
@@ -21,6 +24,11 @@ void Camera::setInitialState(const glm::vec3& position, const glm::vec3& directi
                              ? glm::normalize(direction)
                              : glm::vec3(0.0f, 0.0f, -1.0f);
     reset();
+}
+
+void Camera::setViewportSize(float width, float height) {
+    viewport_size_.x = std::max(1.0f, width);
+    viewport_size_.y = std::max(1.0f, height);
 }
 
 void Camera::update(float ts) {
@@ -85,9 +93,8 @@ void Camera::update(float ts) {
 void Camera::upload() {
     data.view = glm::lookAt(data.position, data.position + direction,
                             glm::vec3(0.0f, 1.0f, 0.0f));
-    auto width = wen::renderer_config->getWidth(),
-         height = wen::renderer_config->getHeight();
-    auto w = static_cast<float>(width), h = static_cast<float>(height);
+    auto w = std::max(1.0f, viewport_size_.x);
+    auto h = std::max(1.0f, viewport_size_.y);
     data.project = glm::perspective(glm::radians(60.0f), w / h, 0.1f, 100.0f);
     memcpy(uniform_buffer->getData(), &data, sizeof(CameraData));
 }

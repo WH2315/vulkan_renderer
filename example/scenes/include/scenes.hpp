@@ -16,8 +16,8 @@ public:
     virtual ~Scene() = default;
 
     virtual void initialize() = 0;
-    virtual void update(float ts) = 0;
-    virtual void render() = 0;
+    virtual void update(float ts, float w, float h) = 0;
+    virtual void render(float w, float h) = 0;
     virtual void imgui() = 0;
     virtual void destroy() = 0;
 
@@ -25,6 +25,8 @@ protected:
     std::shared_ptr<wen::Interface> interface;
     std::shared_ptr<wen::Renderer> renderer;
     std::shared_ptr<wen::Imgui> imGui;
+    glm::vec2 viewport_size{static_cast<float>(wen::renderer_config->getWidth()),
+                            static_cast<float>(wen::renderer_config->getHeight())};
 };
 
 class SceneManager {
@@ -44,6 +46,10 @@ public:
     void update();
     void render();
 
+    VkDescriptorSet image = VK_NULL_HANDLE;
+    VkImageView last_view = VK_NULL_HANDLE;
+    VkSampler last_sampler = VK_NULL_HANDLE;
+
 private:
     struct SceneEntry {
         std::string name;
@@ -52,11 +58,12 @@ private:
 
     void applyPendingSceneChange();
     void switchToScene(int index);
-    void renderSceneSelector();
 
     std::shared_ptr<wen::Interface> interface_;
     std::unique_ptr<Scene> scene_;
     std::vector<SceneEntry> scenes_;
     int active_scene_index_ = -1;
     int pending_scene_index_ = -1;
+
+    std::shared_ptr<wen::Sampler> docking_sampler_;
 };

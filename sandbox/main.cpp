@@ -170,9 +170,9 @@ int main() {
         renderer->bindIndexBuffer(index_buffer); 
         renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
 
-        imgui->begin();
+        imgui->newFrame();
         ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
-        imgui->end();
+        imgui->renderFrame();
 
         renderer->endRender();
     }

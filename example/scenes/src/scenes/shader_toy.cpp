@@ -7,16 +7,32 @@ ShaderToyInput::ShaderToyInput(wen::Interface& interface) {
 }
 
 void ShaderToy::initialize() {
-    auto render_pass = interface->createRenderPass();
+    auto render_pass = interface->createRenderPass(false);
+    render_pass->addAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT,
+                               wen::AttachmentType::eColor);
+    render_pass->addAttachment(wen::DEPTH_ATTACHMENT, wen::AttachmentType::eDepth);
+    render_pass->addAttachment(wen::IMGUI_DOCKING_ATTACHMENT,
+                               wen::AttachmentType::eRGBA8Unorm);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
-    subpass.setOutputAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT);
+    subpass.setOutputAttachment(wen::IMGUI_DOCKING_ATTACHMENT);
     subpass.setDepthAttachment(wen::DEPTH_ATTACHMENT);
+
+    render_pass->addSubpassDependency(
+        wen::EXTERNAL_SUBPASS, "main_subpass",
+        {vk::PipelineStageFlagBits::eColorAttachmentOutput |
+             vk::PipelineStageFlagBits::eLateFragmentTests,
+         vk::PipelineStageFlagBits::eColorAttachmentOutput |
+             vk::PipelineStageFlagBits::eLateFragmentTests},
+        {vk::AccessFlagBits::eColorAttachmentWrite |
+             vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+         vk::AccessFlagBits::eColorAttachmentWrite |
+             vk::AccessFlagBits::eDepthStencilAttachmentWrite});
 
     render_pass->build();
 
     renderer = interface->createRenderer(std::move(render_pass));
-    imGui = std::make_shared<wen::Imgui>(*renderer);
+    imGui = std::make_shared<wen::Imgui>(*renderer, true);
 
     // shader
     auto vert_shader =
@@ -82,10 +98,7 @@ void ShaderToy::initialize() {
     });
 }
 
-void ShaderToy::update(float ts) {
-    auto width = wen::renderer_config->getWidth(),
-         height = wen::renderer_config->getHeight();
-    auto w = static_cast<float>(width), h = static_cast<float>(height);
+void ShaderToy::update(float ts, float w, float h) {
     push_constants_->pushConstant("width", &w);
     push_constants_->pushConstant("height", &h);
 
@@ -96,22 +109,25 @@ void ShaderToy::update(float ts) {
     input_->data->iFrameRate = ImGui::GetIO().Framerate;
 }
 
-void ShaderToy::render() {
-    auto width = wen::renderer_config->getWidth(),
-         height = wen::renderer_config->getHeight();
-    auto w = static_cast<float>(width), h = static_cast<float>(height);
+void ShaderToy::render(float w, float h) {
+    renderer->setClearColor(wen::IMGUI_DOCKING_ATTACHMENT,
+                            {
+                                {0.0f, 0.0f, 0.0f, 1.0f}
+    });
     renderer->bindPipeline(render_pipeline_);
     renderer->bindDescriptorSets(render_pipeline_);
     renderer->pushConstants(render_pipeline_);
     renderer->setViewport(0, h, w, -h);
-    renderer->setScissor(0, 0, w, h);
+    renderer->setScissor(0, 0, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
     renderer->bindVertexBuffer(vertex_buffer_);
     renderer->bindIndexBuffer(index_buffer_);
     renderer->drawIndexed(6, 1, 0, 0, 0);
 }
 
 void ShaderToy::imgui() {
+    ImGui::Begin("Settings");
     ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
+    ImGui::End();
 }
 
 void ShaderToy::destroy() {}

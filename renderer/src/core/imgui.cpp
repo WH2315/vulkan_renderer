@@ -91,14 +91,14 @@ Imgui::Imgui(Renderer& renderer, bool docking) : renderer_(renderer) {
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void Imgui::begin() {
-    renderer_.nextSubpass("imgui_subpass");
+void Imgui::newFrame() {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
-void Imgui::end() {
+void Imgui::renderFrame() {
+    renderer_.nextSubpass("imgui_subpass");
     ImGui::EndFrame();
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), renderer_.getCurrentBuffer());
