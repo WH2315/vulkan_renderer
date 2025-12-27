@@ -40,8 +40,10 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
 
     // 2. vertex input
     vk::PipelineVertexInputStateCreateInfo vertex_input = {};
-    vertex_input.setVertexAttributeDescriptions(vertex_input_->attribute_descriptions_)
-        .setVertexBindingDescriptions(vertex_input_->binding_descriptions_);
+    if (vertex_input_.get() != nullptr) {
+        vertex_input.setVertexAttributeDescriptions(vertex_input_->attribute_descriptions_)
+            .setVertexBindingDescriptions(vertex_input_->binding_descriptions_);
+    }
     
     // 3. input assembly
     vk::PipelineInputAssemblyStateCreateInfo input_assembly = {};

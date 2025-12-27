@@ -1,5 +1,6 @@
 #include "scenes/shader_toy.hpp"
 #include "scenes/model_manager.hpp"
+#include "scenes/ray_marching.hpp"
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -22,8 +23,9 @@ int main() {
 
     scene_manager->addScene<ShaderToy>("Shader Toy");
     scene_manager->addScene<ModelManager>("Model Manager");
+    scene_manager->addScene<RayMarching>("Ray Marching");
 
-    scene_manager->setActiveScene("Model Manager");
+    scene_manager->setActiveScene("Shader Toy");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();
