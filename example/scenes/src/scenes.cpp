@@ -80,13 +80,40 @@ void SceneManager::render() {
         return;
     }
 
+    VkImageView view =
+        scene_->renderer->framebuffer_set->attachments
+            .at(scene_->renderer->render_pass->getAttachmentIndex(
+                wen::IMGUI_DOCKING_ATTACHMENT, wen::renderer_config->msaa()))
+            ->image_view;
+
     scene_->renderer->acquireNextImage();
     scene_->renderer->beginRenderPass();
 
     scene_->render();
+
     scene_->imGui->begin();
+
+    auto* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGuiWindowFlags window_flags =
+        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace", nullptr, window_flags);
+    ImGui::PopStyleVar(3);
+    ImGui::DockSpace(ImGui::GetID("DockSpace"), {0.0f, 0.0f}, 0, nullptr);
+
+    // Scene Manager UI
     renderSceneSelector();
-    scene_->imgui();
+
+    // scene_->imgui();
+
     scene_->imGui->end();
 
     scene_->renderer->endRenderPass();

@@ -111,6 +111,8 @@ int main() {
     descriptor_set->bindTexture(0, texture, sampler);
 
     VkDescriptorSet image = VK_NULL_HANDLE;
+    VkImageView last_view = VK_NULL_HANDLE;
+    VkSampler last_sampler = VK_NULL_HANDLE;
 
     while (!manager->shouldClose()) {
         manager->pollEvents();
@@ -122,15 +124,20 @@ int main() {
         auto width = wen::renderer_config->getWidth(), height = wen::renderer_config->getHeight();
         auto w = static_cast<float>(width), h = static_cast<float>(height);
 
-        // Only create the ImGui texture descriptor set once
-        if (image == VK_NULL_HANDLE) {
+        VkImageView view =
+            renderer->framebuffer_set->attachments
+                .at(renderer->render_pass->getAttachmentIndex(
+                    wen::IMGUI_DOCKING_ATTACHMENT, wen::renderer_config->msaa()))
+                ->image_view;
+        if (image == VK_NULL_HANDLE || view != last_view ||
+            sampler->sampler != last_sampler) {
+            if (image != VK_NULL_HANDLE) {
+                ImGui_ImplVulkan_RemoveTexture(image);
+            }
             image = ImGui_ImplVulkan_AddTexture(
-                sampler->sampler,
-                renderer->framebuffer_set->attachments
-                    .at(renderer->render_pass->getAttachmentIndex(
-                        wen::IMGUI_DOCKING_ATTACHMENT, wen::renderer_config->msaa()))
-                    ->image_view,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                sampler->sampler, view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            last_view = view;
+            last_sampler = sampler->sampler;
         }
 
         renderer->acquireNextImage();

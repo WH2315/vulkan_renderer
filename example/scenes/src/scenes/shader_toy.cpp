@@ -110,8 +110,14 @@ void ShaderToy::render() {
     renderer->drawIndexed(6, 1, 0, 0, 0);
 }
 
-void ShaderToy::imgui() {
+void ShaderToy::imgui(VkDescriptorSet image) {
+    ImGui::Begin("Settings");
     ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
+    ImGui::End();
+
+    ImGui::Begin("Viewport");
+    ImGui::Image(image, ImGui::GetContentRegionAvail());
+    ImGui::End();
 }
 
 void ShaderToy::destroy() {}

@@ -22,7 +22,7 @@ public:
     void initialize() override;
     void update(float ts) override;
     void render() override;
-    void imgui() override;
+    void imgui(VkDescriptorSet image) override;
     void destroy() override;
 
 private:

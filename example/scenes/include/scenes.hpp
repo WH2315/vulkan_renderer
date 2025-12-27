@@ -18,7 +18,7 @@ public:
     virtual void initialize() = 0;
     virtual void update(float ts) = 0;
     virtual void render() = 0;
-    virtual void imgui() = 0;
+    virtual void imgui(VkDescriptorSet image) = 0;
     virtual void destroy() = 0;
 
 protected:
@@ -43,6 +43,10 @@ public:
 
     void update();
     void render();
+
+    VkDescriptorSet image = VK_NULL_HANDLE;
+    VkImageView last_view = VK_NULL_HANDLE;
+    VkSampler last_sampler = VK_NULL_HANDLE;
 
 private:
     struct SceneEntry {

@@ -1,16 +1,32 @@
 #include "scenes/model_manager.hpp"
 
 void ModelManager::initialize() {
-    auto render_pass = interface->createRenderPass();
+    auto render_pass = interface->createRenderPass(false);
+    render_pass->addAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT,
+                               wen::AttachmentType::eColor);
+    render_pass->addAttachment(wen::DEPTH_ATTACHMENT, wen::AttachmentType::eDepth);
+    render_pass->addAttachment(wen::IMGUI_DOCKING_ATTACHMENT,
+                               wen::AttachmentType::eRGBA8Unorm);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
     subpass.setOutputAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT);
     subpass.setDepthAttachment(wen::DEPTH_ATTACHMENT);
 
+    render_pass->addSubpassDependency(
+        wen::EXTERNAL_SUBPASS, "main_subpass",
+        {vk::PipelineStageFlagBits::eColorAttachmentOutput |
+             vk::PipelineStageFlagBits::eLateFragmentTests,
+         vk::PipelineStageFlagBits::eColorAttachmentOutput |
+             vk::PipelineStageFlagBits::eLateFragmentTests},
+        {vk::AccessFlagBits::eColorAttachmentWrite |
+             vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+         vk::AccessFlagBits::eColorAttachmentWrite |
+             vk::AccessFlagBits::eDepthStencilAttachmentWrite});
+
     render_pass->build();
 
     renderer = interface->createRenderer(std::move(render_pass));
-    imGui = std::make_shared<wen::Imgui>(*renderer);
+    imGui = std::make_shared<wen::Imgui>(*renderer, true);
 
     // shader
     auto vert_shader =
@@ -94,7 +110,9 @@ void ModelManager::render() {
     }
 }
 
-void ModelManager::imgui() {
+void ModelManager::imgui(VkDescriptorSet image) {
+    ImGui::Begin("Settings");
+
     ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
     ImGui::Separator();
 
@@ -196,6 +214,12 @@ void ModelManager::imgui() {
         ImGui::Separator();
     }
     ImGui::PopStyleVar();
+
+    ImGui::End();
+    ImGui::Image(image, ImGui::GetContentRegionAvail());
+    ImGui::Begin("Viewport");
+
+    ImGui::End();
 }
 
 void ModelManager::destroy() {
