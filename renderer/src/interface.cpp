@@ -1,4 +1,5 @@
 #include "interface.hpp"
+#include "core/log.hpp"
 
 namespace wen {
 
@@ -58,6 +59,8 @@ std::shared_ptr<ImageTexture> Interface::createTexture(const std::string& filena
     std::string filepath = texture_dir_ + "/" + filename;
     if (filetype == "png" || filetype == "jpg") {
         return std::make_shared<ImageTexture>(filepath, mip_levels);
+    } else {
+        WEN_ERROR("Unsupported texture format: {}", filetype)
     }
     return nullptr;
 }
