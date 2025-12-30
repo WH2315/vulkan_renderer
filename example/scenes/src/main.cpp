@@ -9,7 +9,7 @@ int main() {
 
     manager->initializeEngine();
 
-    wen::renderer_config->window_info = {"scenes", 1600, 900};
+    wen::renderer_config->window_info = {"scenes", 1920, 1080};
     wen::renderer_config->debug = true;
     wen::renderer_config->app_name = "scenes";
     wen::renderer_config->engine_name = "wen";
