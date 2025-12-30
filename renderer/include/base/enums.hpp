@@ -228,7 +228,7 @@ struct FlagTraits<ShaderStage> {
         ShaderStage::eVertex | ShaderStage::eFragment;
 };
 
-enum class AttachmentType { eColor, eDepth, eRGBA8Unorm };
+enum class AttachmentType { eColor, eDepth, eRGBA8Snorm, eRGBA32Sfloat };
 
 enum class InputRate {
     eVertex,

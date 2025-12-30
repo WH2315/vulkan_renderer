@@ -1,4 +1,5 @@
 #include "resources/descriptor/descriptor_set.hpp"
+#include "renderer.hpp"
 #include  "base/utils.hpp"
 #include "manager.hpp"
 
@@ -101,6 +102,39 @@ void DescriptorSet::bindTextures(uint32_t binding, const std::vector<std::pair<s
 
 void DescriptorSet::bindTexture(uint32_t binding, std::shared_ptr<SpecificTexture> texture, std::shared_ptr<Sampler> sampler) {
     bindTextures(binding, {{texture, sampler}});
+}
+
+void DescriptorSet::bindInputAttachments(uint32_t binding, const std::shared_ptr<Renderer>& renderer, const std::vector<std::pair<std::string, std::shared_ptr<Sampler>>>& names_samplers) {
+    auto layout_binding = getBinding(binding);
+    if ((layout_binding.descriptorType != vk::DescriptorType::eInputAttachment) &&
+        (layout_binding.descriptorType != vk::DescriptorType::eCombinedImageSampler)) {
+        WEN_ERROR("binding {} is not input attachment!", binding)
+        return;
+    }
+    if (layout_binding.descriptorCount != names_samplers.size()) {
+        WEN_ERROR("binding {} requires {} input attachments, but {} provided!", binding, layout_binding.descriptorCount, names_samplers.size())
+        return;
+    }
+    for (uint32_t i = 0; i < renderer_config->max_frames_in_flight; i++) {
+        std::vector<vk::DescriptorImageInfo> images(layout_binding.descriptorCount);
+        for (uint32_t j = 0; j < layout_binding.descriptorCount; j++) {
+            auto index = renderer->render_pass->getAttachmentIndex(names_samplers[j].first, true);
+            images[j].setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                .setImageView(renderer->framebuffer_set->attachments[index]->image_view)
+                .setSampler(names_samplers[j].second->sampler);
+        }
+        vk::WriteDescriptorSet write;
+        write.setDstSet(descriptor_sets_[i])
+            .setDstBinding(layout_binding.binding)
+            .setDstArrayElement(0)
+            .setDescriptorType(layout_binding.descriptorType)
+            .setImageInfo(images);
+        manager->device->device.updateDescriptorSets({write}, {});
+    }
+}
+
+void DescriptorSet::bindInputAttachment(uint32_t binding, const std::shared_ptr<Renderer>& renderer, const std::string& name, std::shared_ptr<Sampler> sampler) {
+    bindInputAttachments(binding, renderer, {{name, sampler}});
 }
 
 } // namespace wen

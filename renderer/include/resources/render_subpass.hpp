@@ -29,7 +29,7 @@ private:
     std::vector<vk::AttachmentReference> input_attachments_;
 
 private:
-    vk::AttachmentReference createAttachmentReference(const std::string& name, vk::ImageLayout layout, bool read);
+    vk::AttachmentReference createAttachmentReference(const std::string& name, vk::ImageLayout layout, bool read, const char* caller = "unknown");
 };
 
 } // namespace wen

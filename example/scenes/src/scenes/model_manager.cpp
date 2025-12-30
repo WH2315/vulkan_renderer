@@ -6,7 +6,7 @@ void ModelManager::initialize() {
                                wen::AttachmentType::eColor);
     render_pass->addAttachment(wen::DEPTH_ATTACHMENT, wen::AttachmentType::eDepth);
     render_pass->addAttachment(wen::IMGUI_DOCKING_ATTACHMENT,
-                               wen::AttachmentType::eRGBA8Unorm);
+                               wen::AttachmentType::eRGBA8Snorm);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
     subpass.setOutputAttachment(wen::IMGUI_DOCKING_ATTACHMENT);

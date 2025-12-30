@@ -26,7 +26,7 @@ int main() {
     auto render_pass = interface->createRenderPass(false);
     render_pass->addAttachment(wen::SWAPCHAIN_IMAGE_ATTACHMENT, wen::AttachmentType::eColor);
     render_pass->addAttachment(wen::DEPTH_ATTACHMENT, wen::AttachmentType::eDepth);
-    render_pass->addAttachment(wen::IMGUI_DOCKING_ATTACHMENT, wen::AttachmentType::eRGBA8Unorm);
+    render_pass->addAttachment(wen::IMGUI_DOCKING_ATTACHMENT, wen::AttachmentType::eRGBA8Snorm);
 
     auto& subpass = render_pass->addSubpass("main_subpass");
     subpass.setOutputAttachment(wen::IMGUI_DOCKING_ATTACHMENT);

@@ -2,6 +2,7 @@
 #include "scenes/model_manager.hpp"
 #include "scenes/ray_marching.hpp"
 #include "scenes/pbr_scene.hpp"
+#include "scenes/deferred_shading.hpp"
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -26,8 +27,9 @@ int main() {
     scene_manager->addScene<ModelManager>("Model Manager");
     scene_manager->addScene<RayMarching>("Ray Marching");
     scene_manager->addScene<PBRScene>("PBR Scene");
+    scene_manager->addScene<DeferredShading>("Deferred Shading");
 
-    scene_manager->setActiveScene("Shader Toy");
+    scene_manager->setActiveScene("Deferred Shading");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();

@@ -2,12 +2,13 @@
 
 #include "resources/render_subpass.hpp"
 #include "base/enums.hpp"
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 namespace wen {
 
 struct AttachmentInfo {
+    std::string name;
     vk::AttachmentDescription attachment = {};
     vk::ImageUsageFlags usage = {};
     vk::ImageAspectFlags aspect = {};
@@ -15,6 +16,7 @@ struct AttachmentInfo {
 };
 
 struct ResolveAttachmentInfo {
+    std::string name;
     vk::AttachmentDescription attachment = {};
     uint32_t offset = 0;
 };
@@ -46,8 +48,8 @@ public:
     std::vector<vk::SubpassDependency> final_dependencies;
 
 private:
-    std::map<std::string, uint32_t> attachment_indices_;
-    std::map<std::string, uint32_t> subpass_indices_;
+    std::unordered_map<std::string, uint32_t> attachment_indices_;
+    std::unordered_map<std::string, uint32_t> subpass_indices_;
 };
 
 } // namespace wen

@@ -28,6 +28,7 @@ void RenderPass::addAttachment(const std::string& name, AttachmentType type) {
     attachment_indices_.insert(std::make_pair(name, attachments.size()));
     auto& attachment = attachments.emplace_back();
 
+    attachment.name = name;
     attachment.attachment
         .setSamples(renderer_config->getSampleCount())
         .setLoadOp(vk::AttachmentLoadOp::eClear)
@@ -47,6 +48,7 @@ void RenderPass::addAttachment(const std::string& name, AttachmentType type) {
             if (renderer_config->msaa()) {
                 attachment.usage |= vk::ImageUsageFlagBits::eTransientAttachment;
                 auto& resolve_attachment = resolve_attachments.emplace_back();
+                resolve_attachment.name = name;
                 resolve_attachment.attachment = attachment.attachment;
                 resolve_attachment.attachment.setSamples(vk::SampleCountFlagBits::e1)
                     .setLoadOp(vk::AttachmentLoadOp::eDontCare);
@@ -62,15 +64,33 @@ void RenderPass::addAttachment(const std::string& name, AttachmentType type) {
             attachment.aspect = vk::ImageAspectFlagBits::eDepth;
             attachment.clear_color = vk::ClearDepthStencilValue(1.0f, 0);
             break;
-        case AttachmentType::eRGBA8Unorm:
+        case AttachmentType::eRGBA8Snorm:
             attachment.attachment
-                .setFormat(vk::Format::eR8G8B8A8Unorm)
+                .setFormat(vk::Format::eR8G8B8A8Snorm)
                 .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
             attachment.usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment | vk::ImageUsageFlagBits::eSampled;
             attachment.aspect = vk::ImageAspectFlagBits::eColor;
             attachment.clear_color = vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
             if (renderer_config->msaa()) {
                 auto& resolve_attachment = resolve_attachments.emplace_back();
+                resolve_attachment.name = name;
+                resolve_attachment.attachment = attachment.attachment;
+                resolve_attachment.attachment.setSamples(vk::SampleCountFlagBits::e1)
+                    .setLoadOp(vk::AttachmentLoadOp::eDontCare);
+                resolve_attachment.offset = resolve_attachments.size() - 1;
+                attachment.attachment.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+            }
+            break;
+        case AttachmentType::eRGBA32Sfloat:
+            attachment.attachment
+                .setFormat(vk::Format::eR32G32B32A32Sfloat)
+                .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+            attachment.usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment | vk::ImageUsageFlagBits::eSampled;
+            attachment.aspect = vk::ImageAspectFlagBits::eColor;
+            attachment.clear_color = vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+            if (renderer_config->msaa()) {
+                auto& resolve_attachment = resolve_attachments.emplace_back();
+                resolve_attachment.name = name;
                 resolve_attachment.attachment = attachment.attachment;
                 resolve_attachment.attachment.setSamples(vk::SampleCountFlagBits::e1)
                     .setLoadOp(vk::AttachmentLoadOp::eDontCare);
@@ -146,7 +166,7 @@ uint32_t RenderPass::getAttachmentIndex(const std::string& name, bool read) cons
     if (it == attachment_indices_.end()) {
         WEN_ERROR("Attachment \"{}\" not found", name)
     }
-    if (read) {
+    if (read && attachments[it->second].attachment.samples != vk::SampleCountFlagBits::e1) {
         auto index = it->second == 0 ? 0 : it->second - 1;
         return attachments.size() + resolve_attachments[index].offset;
     }
