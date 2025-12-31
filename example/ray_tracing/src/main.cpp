@@ -52,7 +52,7 @@ int main() {
 
     auto vert_shader = interface->loadShader("shader.vert", wen::ShaderStage::eVertex);
     auto frag_shader = interface->loadShader("shader.frag", wen::ShaderStage::eFragment);
-    auto shader_program = interface->createShaderProgram();
+    auto shader_program = interface->createGraphicsShaderProgram();
     shader_program->attach(vert_shader).attach(frag_shader);
 
     struct Vertex {
@@ -91,7 +91,7 @@ int main() {
     });
     descriptor_set->build();
 
-    auto render_pipeline = interface->createRenderPipeline(renderer, shader_program, "main_subpass");
+    auto render_pipeline = interface->createGraphicsRenderPipeline(renderer, shader_program, "main_subpass");
     render_pipeline->setVertexInput(vertex_input);
     render_pipeline->setDescriptorSet(descriptor_set);
     render_pipeline->compile({

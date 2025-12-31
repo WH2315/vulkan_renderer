@@ -21,12 +21,12 @@ std::shared_ptr<Shader> Interface::loadShader(const std::string& filename, Shade
     return std::make_shared<Shader>(shader_dir_ + "/" + filename, stage);
 }
 
-std::shared_ptr<ShaderProgram> Interface::createShaderProgram() {
-    return std::make_shared<ShaderProgram>();
+std::shared_ptr<GraphicsShaderProgram> Interface::createGraphicsShaderProgram() {
+    return std::make_shared<GraphicsShaderProgram>();
 }
 
-std::shared_ptr<RenderPipeline> Interface::createRenderPipeline(std::weak_ptr<Renderer> renderer, std::shared_ptr<ShaderProgram> shader_program, const std::string& subpass_name) {
-    return std::make_shared<RenderPipeline>(renderer, shader_program, subpass_name);
+std::shared_ptr<GraphicsRenderPipeline> Interface::createGraphicsRenderPipeline(std::weak_ptr<Renderer> renderer, std::shared_ptr<GraphicsShaderProgram> shader_program, const std::string& subpass_name) {
+    return std::make_shared<GraphicsRenderPipeline>(renderer, shader_program, subpass_name);
 }
 
 std::shared_ptr<VertexInput> Interface::createVertexInput(const std::vector<VertexInputInfo>& infos) {

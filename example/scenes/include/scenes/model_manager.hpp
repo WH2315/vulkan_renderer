@@ -27,10 +27,10 @@ public:
 
 private:
     std::unique_ptr<Camera> camera_;
-    std::shared_ptr<wen::ShaderProgram> shader_program_;
+    std::shared_ptr<wen::GraphicsShaderProgram> shader_program_;
     std::shared_ptr<wen::VertexBuffer> vertex_buffer_;
     std::shared_ptr<wen::IndexBuffer> index_buffer_;
-    std::shared_ptr<wen::RenderPipeline> render_pipeline_;
+    std::shared_ptr<wen::GraphicsRenderPipeline> render_pipeline_;
     // 模型对应的文件名和模型信息
     std::map<std::string, ModelInfo> models_;
     // 实例名 (模型文件名 实例索引)

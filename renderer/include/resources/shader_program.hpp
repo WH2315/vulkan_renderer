@@ -5,14 +5,14 @@
 
 namespace wen {
 
-class ShaderProgram {
-    friend class RenderPipeline;
+class GraphicsShaderProgram {
+    friend class GraphicsRenderPipeline;
 
 public:
-    ShaderProgram() = default;
-    ~ShaderProgram();
+    GraphicsShaderProgram() = default;
+    ~GraphicsShaderProgram();
 
-    ShaderProgram& attach(const std::shared_ptr<Shader>& shader);
+    GraphicsShaderProgram& attach(const std::shared_ptr<Shader>& shader);
 
 private:
     std::shared_ptr<Shader> vert_shader_;

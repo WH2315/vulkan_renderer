@@ -23,6 +23,11 @@ void Context::quit() {
 
 void Context::initialize() {
     createVkInstance();
+    if (renderer_config->is_enable_ray_tracing) {
+        vk::detail::DynamicLoader dl;
+        auto vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+        dispatcher = vk::detail::DispatchLoaderDynamic(vk_instance, vkGetInstanceProcAddr);
+    }
     createSurface();
     device = std::make_unique<Device>();
     swapchain = std::make_unique<Swapchain>();
@@ -100,7 +105,10 @@ void Context::createSurface() {
 
 void Context::createVmaAllocator() {
     VmaAllocatorCreateInfo create_info = {};
-    create_info.vulkanApiVersion = VK_API_VERSION_1_3;
+    if (renderer_config->is_enable_ray_tracing) {
+        create_info.flags = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+    }
+    create_info.vulkanApiVersion = VK_API_VERSION_1_4;
     create_info.instance = vk_instance;
     create_info.physicalDevice = device->physical_device;
     create_info.device = device->device;

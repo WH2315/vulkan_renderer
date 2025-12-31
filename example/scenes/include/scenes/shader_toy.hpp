@@ -32,9 +32,9 @@ public:
 private:
     float time_ = 0.0f;
     std::unique_ptr<ShaderToyInput> input_;
-    std::shared_ptr<wen::ShaderProgram> shader_program_;
+    std::shared_ptr<wen::GraphicsShaderProgram> shader_program_;
     std::shared_ptr<wen::VertexBuffer> vertex_buffer_;
     std::shared_ptr<wen::IndexBuffer> index_buffer_;
     std::shared_ptr<wen::PushConstants> push_constants_;
-    std::shared_ptr<wen::RenderPipeline> render_pipeline_;
+    std::shared_ptr<wen::GraphicsRenderPipeline> render_pipeline_;
 };

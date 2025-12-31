@@ -41,7 +41,7 @@ void RayMarching::initialize() {
         interface->loadShader("ray_marching/shader.vert", wen::ShaderStage::eVertex);
     auto frag_shader =
         interface->loadShader("ray_marching/shader.frag", wen::ShaderStage::eFragment);
-    shader_program_ = interface->createShaderProgram();
+    shader_program_ = interface->createGraphicsShaderProgram();
     shader_program_->attach(vert_shader).attach(frag_shader);
 
     // descriptor set
@@ -68,7 +68,7 @@ void RayMarching::initialize() {
 
     // render pipeline
     render_pipeline_ =
-        interface->createRenderPipeline(renderer, shader_program_, "main_subpass");
+        interface->createGraphicsRenderPipeline(renderer, shader_program_, "main_subpass");
     render_pipeline_->setDescriptorSet(descriptor_set);
     render_pipeline_->compile({
         .depth_test_enable = true,

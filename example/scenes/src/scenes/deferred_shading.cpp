@@ -67,13 +67,13 @@ void DeferredShading::initialize() {
         interface->loadShader("deferred_shading/main.vert", wen::ShaderStage::eVertex);
     auto main_frag_shader = interface->loadShader("deferred_shading/main.frag",
                                                   wen::ShaderStage::eFragment);
-    main_shader_program_ = interface->createShaderProgram();
+    main_shader_program_ = interface->createGraphicsShaderProgram();
     main_shader_program_->attach(main_vert_shader).attach(main_frag_shader);
     auto post_vert_shader =
         interface->loadShader("deferred_shading/post.vert", wen::ShaderStage::eVertex);
     auto post_frag_shader = interface->loadShader("deferred_shading/post.frag",
                                                   wen::ShaderStage::eFragment);
-    post_shader_program_ = interface->createShaderProgram();
+    post_shader_program_ = interface->createGraphicsShaderProgram();
     post_shader_program_->attach(post_vert_shader).attach(post_frag_shader);
 
     // vertex input
@@ -140,7 +140,7 @@ void DeferredShading::initialize() {
 
     // render pipeline
     main_render_pipeline_ =
-        interface->createRenderPipeline(renderer, main_shader_program_, "main_subpass");
+        interface->createGraphicsRenderPipeline(renderer, main_shader_program_, "main_subpass");
     main_render_pipeline_->setVertexInput(vertex_input);
     main_render_pipeline_->setDescriptorSet(main_descriptor_set_);
     main_render_pipeline_->compile({
@@ -148,7 +148,7 @@ void DeferredShading::initialize() {
         .dynamic_states = {vk::DynamicState::eViewport, vk::DynamicState::eScissor}
     });
     post_render_pipeline_ =
-        interface->createRenderPipeline(renderer, post_shader_program_, "post_subpass");
+        interface->createGraphicsRenderPipeline(renderer, post_shader_program_, "post_subpass");
     post_render_pipeline_->setDescriptorSet(post_descriptor_set_);
     post_render_pipeline_->compile({.depth_test_enable = true});
 }

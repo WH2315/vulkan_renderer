@@ -4,34 +4,55 @@
 
 namespace wen {
 
-RenderPipeline::RenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<ShaderProgram>& shader_program, const std::string& subpass_name)
-    : renderer_(renderer), shader_program_(shader_program), subpass_name_(subpass_name) {}
-
-RenderPipeline::~RenderPipeline() {
-    descriptor_sets.clear();
-    manager->device->device.destroyPipeline(pipeline);
-    manager->device->device.destroyPipelineLayout(pipeline_layout);
-    renderer_.reset();
-    shader_program_.reset();
-    subpass_name_.clear();
+vk::PipelineShaderStageCreateInfo RenderPipeline::createShaderStage(vk::ShaderStageFlagBits stage, vk::ShaderModule module) {
+    vk::PipelineShaderStageCreateInfo create_info;
+    create_info.setPSpecializationInfo(nullptr)
+        .setStage(stage)
+        .setModule(module)
+        .setPName("main");
+    return create_info;
 }
 
-void RenderPipeline::setVertexInput(std::shared_ptr<VertexInput> vertex_input) {
+void RenderPipeline::createPipelineLayout() {
+    vk::PipelineLayoutCreateInfo create_info;
+
+    std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {};
+    descriptor_set_layouts.reserve(descriptor_sets.size());
+    for (const auto& descriptor_set : descriptor_sets) {
+        if (descriptor_set.has_value()) {
+            descriptor_set_layouts.push_back(descriptor_set.value()->descriptor_layout_);
+        }
+    }
+
+    create_info.setSetLayouts(descriptor_set_layouts);
+
+    if (push_constants.has_value()) {
+        create_info.setPushConstantRanges(push_constants.value()->range);
+    }
+    
+    pipeline_layout = manager->device->device.createPipelineLayout(create_info);
+}
+
+RenderPipeline::~RenderPipeline() {
+    manager->device->device.destroyPipelineLayout(pipeline_layout);
+    manager->device->device.destroyPipeline(pipeline);
+    descriptor_sets.clear();
+    push_constants.reset();
+}
+
+GraphicsRenderPipeline::GraphicsRenderPipeline(std::weak_ptr<Renderer> renderer, const std::shared_ptr<GraphicsShaderProgram>& shader_program, const std::string& subpass_name)
+    : renderer_(renderer), shader_program_(shader_program), subpass_name_(subpass_name) {}
+
+GraphicsRenderPipeline::~GraphicsRenderPipeline() {
+    shader_program_.reset();
+    vertex_input_.reset();
+}
+
+void GraphicsRenderPipeline::setVertexInput(std::shared_ptr<VertexInput> vertex_input) {
     vertex_input_ = std::move(vertex_input);
 }
 
-void RenderPipeline::setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index) {
-    if (index + 1 > descriptor_sets.size()) {
-        descriptor_sets.resize(index + 1);
-    }
-    descriptor_sets[index] = std::move(descriptor_set);
-}
-
-void RenderPipeline::setPushConstants(std::shared_ptr<PushConstants> push_constants) {
-    this->push_constants = std::move(push_constants);
-}
-
-void RenderPipeline::compile(const RenderPipelineOptions& options) {
+void GraphicsRenderPipeline::compile(const GraphicsRenderPipelineOptions& options) {
     // 1. shader stages
     std::vector<vk::PipelineShaderStageCreateInfo> shader_stages = {
         createShaderStage(vk::ShaderStageFlagBits::eVertex, shader_program_->vert_shader_->module.value()),
@@ -132,35 +153,6 @@ void RenderPipeline::compile(const RenderPipelineOptions& options) {
     locked_renderer.reset();
 
     pipeline = manager->device->device.createGraphicsPipeline(nullptr, create_info).value;
-}
-
-vk::PipelineShaderStageCreateInfo RenderPipeline::createShaderStage(vk::ShaderStageFlagBits stage, vk::ShaderModule module) {
-    vk::PipelineShaderStageCreateInfo create_info;
-    create_info.setPSpecializationInfo(nullptr)
-        .setStage(stage)
-        .setModule(module)
-        .setPName("main");
-    return create_info;
-}
-
-void RenderPipeline::createPipelineLayout() {
-    vk::PipelineLayoutCreateInfo create_info;
-
-    std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {};
-    descriptor_set_layouts.reserve(descriptor_sets.size());
-    for (const auto& descriptor_set : descriptor_sets) {
-        if (descriptor_set.has_value()) {
-            descriptor_set_layouts.push_back(descriptor_set.value()->descriptor_layout_);
-        }
-    }
-
-    create_info.setSetLayouts(descriptor_set_layouts);
-
-    if (push_constants.has_value()) {
-        create_info.setPushConstantRanges(push_constants.value()->range);
-    }
-    
-    pipeline_layout = manager->device->device.createPipelineLayout(create_info);
 }
 
 } // namespace wen

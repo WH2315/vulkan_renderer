@@ -73,6 +73,28 @@ Device::Device() {
         {VK_KHR_BIND_MEMORY_2_EXTENSION_NAME, false},
     };
 
+    vk::PhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = {};
+    vk::PhysicalDeviceRayTracingPipelineFeaturesKHR ray_tracing_pipeline_features = {};
+    vk::PhysicalDeviceRayQueryFeaturesKHR ray_query_features = {};
+    if (renderer_config->is_enable_ray_tracing) {
+        requiredExtensions.insert(std::make_pair(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, false));
+        requiredExtensions.insert(std::make_pair(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, false));
+        requiredExtensions.insert(std::make_pair(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, false));
+        requiredExtensions.insert(std::make_pair(VK_KHR_RAY_QUERY_EXTENSION_NAME, false));
+        acceleration_structure_features.accelerationStructure = VK_TRUE;
+        acceleration_structure_features.accelerationStructureCaptureReplay = VK_TRUE;
+        acceleration_structure_features.accelerationStructureIndirectBuild = VK_FALSE;
+        acceleration_structure_features.accelerationStructureHostCommands = VK_FALSE;
+        acceleration_structure_features.descriptorBindingAccelerationStructureUpdateAfterBind = VK_TRUE;
+        ray_tracing_pipeline_features.rayTracingPipeline = VK_TRUE;
+        ray_tracing_pipeline_features.rayTracingPipelineShaderGroupHandleCaptureReplay = VK_FALSE;
+        ray_tracing_pipeline_features.rayTracingPipelineShaderGroupHandleCaptureReplayMixed = VK_FALSE;
+        ray_tracing_pipeline_features.rayTracingPipelineTraceRaysIndirect = VK_TRUE;
+        ray_tracing_pipeline_features.rayTraversalPrimitiveCulling = VK_TRUE;
+        ray_query_features.rayQuery = VK_TRUE;
+        create_info.setPNext(&acceleration_structure_features.setPNext(&ray_tracing_pipeline_features.setPNext(&ray_query_features.setPNext(&features12))));
+    }
+
     std::vector<const char*> extensions;
     auto EX = physical_device.enumerateDeviceExtensionProperties();
     for (const auto& ex : EX) {
@@ -116,6 +138,18 @@ Device::Device() {
     present_queue = device.getQueue(present_queue_family, 0);
     transfer_queue = device.getQueue(transfer_queue_family, 0);
     compute_queue = device.getQueue(compute_queue_family, 0);
+
+    if (renderer_config->is_enable_ray_tracing) {
+        vk::PhysicalDeviceProperties2 properties = {};
+        vk::PhysicalDeviceAccelerationStructurePropertiesKHR acceleration_structure_properties = {};
+        vk::PhysicalDeviceRayTracingPipelinePropertiesKHR ray_tracing_pipeline_properties = {};
+        properties.pNext = &acceleration_structure_properties;
+        acceleration_structure_properties.pNext = &ray_tracing_pipeline_properties;
+        physical_device.getProperties2(&properties);
+        WEN_INFO("\tthe maximum number of geometries in the bottom level acceleration structure: {}", acceleration_structure_properties.maxGeometryCount)
+        WEN_INFO("\tthe maximum number of instances in the top level acceleration structure: {}", acceleration_structure_properties.maxInstanceCount)
+        WEN_INFO("\tthe maximum number of levels of ray recursion allowed in a trace command: {}", ray_tracing_pipeline_properties.maxRayRecursionDepth)
+    }
 }
 
 bool Device::suitable(const vk::PhysicalDevice& device) {

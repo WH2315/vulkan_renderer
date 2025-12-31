@@ -159,21 +159,21 @@ void Renderer::setClearColor(const std::string& name, const vk::ClearValue& valu
     render_pass->attachments[index].clear_color = value;
 }
 
-void Renderer::bindPipeline(const std::shared_ptr<RenderPipeline>& render_pipeline) {
-    current_buffer_.bindPipeline(vk::PipelineBindPoint::eGraphics, render_pipeline->pipeline);
+void Renderer::bindPipeline(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline) {
+    current_buffer_.bindPipeline(render_pipeline->bind_point, render_pipeline->pipeline);
 }
 
-void Renderer::bindDescriptorSets(const std::shared_ptr<RenderPipeline>& render_pipeline) {
+void Renderer::bindDescriptorSets(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline) {
     if (!render_pipeline->descriptor_sets.empty()) {
         std::vector<vk::DescriptorSet> sets;
         for (const auto& descriptor_set : render_pipeline->descriptor_sets) {
             sets.push_back(descriptor_set.value()->descriptor_sets_[current_frame_]);
         }
-        current_buffer_.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, render_pipeline->pipeline_layout, 0, sets, {});
+        current_buffer_.bindDescriptorSets(render_pipeline->bind_point, render_pipeline->pipeline_layout, 0, sets, {});
     }
 }
 
-void Renderer::pushConstants(const std::shared_ptr<RenderPipeline>& render_pipeline) {
+void Renderer::pushConstants(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline) {
     if (render_pipeline->push_constants.has_value()) {
         auto push_constants = render_pipeline->push_constants.value();
         current_buffer_.pushConstants(render_pipeline->pipeline_layout, push_constants->range.stageFlags, 0, push_constants->total_size, push_constants->constants.data());

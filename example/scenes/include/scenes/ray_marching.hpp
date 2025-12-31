@@ -33,6 +33,6 @@ public:
 private:
     std::unique_ptr<Camera> camera_;
     std::unique_ptr<RayMarchingInfo> info_;
-    std::shared_ptr<wen::ShaderProgram> shader_program_;
-    std::shared_ptr<wen::RenderPipeline> render_pipeline_;
+    std::shared_ptr<wen::GraphicsShaderProgram> shader_program_;
+    std::shared_ptr<wen::GraphicsRenderPipeline> render_pipeline_;
 };
