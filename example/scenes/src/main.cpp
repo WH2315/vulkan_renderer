@@ -14,6 +14,7 @@ int main() {
     wen::renderer_config->app_name = "scenes";
     wen::renderer_config->engine_name = "wen";
     wen::renderer_config->vsync = false;
+    wen::renderer_config->is_enable_ray_tracing = true;
 
     manager->initializeRenderer();
 

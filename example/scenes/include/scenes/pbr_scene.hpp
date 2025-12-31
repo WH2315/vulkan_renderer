@@ -50,9 +50,9 @@ private:
     std::unique_ptr<Camera> camera_;
     std::unique_ptr<Light> light_;
     std::unique_ptr<PBRMaterial> material_;
-    std::shared_ptr<wen::ShaderProgram> shader_program_;
+    std::shared_ptr<wen::GraphicsShaderProgram> shader_program_;
     std::shared_ptr<wen::NormalModel> model_;
     std::shared_ptr<wen::VertexBuffer> vertex_buffer_;
     std::shared_ptr<wen::IndexBuffer> index_buffer_;
-    std::shared_ptr<wen::RenderPipeline> render_pipeline_;
+    std::shared_ptr<wen::GraphicsRenderPipeline> render_pipeline_;
 };

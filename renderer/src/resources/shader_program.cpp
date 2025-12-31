@@ -2,7 +2,7 @@
 
 namespace wen {
 
-ShaderProgram& ShaderProgram::attach(const std::shared_ptr<Shader>& shader) {
+GraphicsShaderProgram& GraphicsShaderProgram::attach(const std::shared_ptr<Shader>& shader) {
     if (shader->stage == ShaderStage::eVertex) {
         vert_shader_ = shader;
     } else if (shader->stage == ShaderStage::eFragment) {
@@ -11,7 +11,7 @@ ShaderProgram& ShaderProgram::attach(const std::shared_ptr<Shader>& shader) {
     return *this;
 }
 
-ShaderProgram::~ShaderProgram() {
+GraphicsShaderProgram::~GraphicsShaderProgram() {
     if (vert_shader_) {
         vert_shader_.reset();
     }

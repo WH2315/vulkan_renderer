@@ -92,7 +92,9 @@ void SceneManager::render() {
     }
 
     scene_->renderer->acquireNextImage();
-    scene_->renderer->beginRenderPass();
+    if (!scene_->is_enable_ray_tracing) {
+        scene_->renderer->beginRenderPass();
+    }
 
     float dt = ImGui::GetIO().DeltaTime;
     const auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());

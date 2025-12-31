@@ -11,7 +11,7 @@ struct VertexInputInfo {
 };
 
 class VertexInput {
-    friend class RenderPipeline;
+    friend class GraphicsRenderPipeline;
 
 public:
     VertexInput(const std::vector<VertexInputInfo>& infos);

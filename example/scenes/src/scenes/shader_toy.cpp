@@ -39,7 +39,7 @@ void ShaderToy::initialize() {
         interface->loadShader("shader_toy/shader.vert", wen::ShaderStage::eVertex);
     auto frag_shader =
         interface->loadShader("shader_toy/shader.frag", wen::ShaderStage::eFragment);
-    shader_program_ = interface->createShaderProgram();
+    shader_program_ = interface->createGraphicsShaderProgram();
     shader_program_->attach(vert_shader).attach(frag_shader);
 
     // vertex input
@@ -88,7 +88,7 @@ void ShaderToy::initialize() {
 
     // render pipeline
     render_pipeline_ =
-        interface->createRenderPipeline(renderer, shader_program_, "main_subpass");
+        interface->createGraphicsRenderPipeline(renderer, shader_program_, "main_subpass");
     render_pipeline_->setVertexInput(vertex_input);
     render_pipeline_->setDescriptorSet(descriptor_set);
     render_pipeline_->setPushConstants(push_constants_);

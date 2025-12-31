@@ -20,10 +20,25 @@ Shader::Shader(const std::string& filename, ShaderStage stage) {
         case ShaderStage::eFragment:
             shader_stage = EShLangFragment;
             break;
+        case ShaderStage::eRaygen:
+            shader_stage = EShLangRayGen;
+            break;
+        case ShaderStage::eMiss:
+            shader_stage = EShLangMiss;
+            break;
+        case ShaderStage::eClosestHit:
+            shader_stage = EShLangClosestHit;
+            break;
+        case ShaderStage::eIntersection:
+            shader_stage = EShLangIntersect;
+            break;
     }
     glslang::TShader shader(shader_stage);
     auto data = code.data();
     int version = 450;
+    if (renderer_config->is_enable_ray_tracing) {
+        version = 460;
+    }
     shader.setStrings(&data, 1);
     shader.setEnvInput(glslang::EShSourceGlsl, shader_stage, glslang::EShClientVulkan, version);
     shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_3);

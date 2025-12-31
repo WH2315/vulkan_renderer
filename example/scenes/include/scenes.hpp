@@ -22,6 +22,7 @@ public:
     virtual void destroy() = 0;
 
 protected:
+    bool is_enable_ray_tracing = false;
     std::shared_ptr<wen::Interface> interface;
     std::shared_ptr<wen::Renderer> renderer;
     std::shared_ptr<wen::Imgui> imGui;

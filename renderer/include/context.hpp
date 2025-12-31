@@ -31,6 +31,8 @@ public:
     std::unique_ptr<DescriptorPool> descriptor_pool;
     VmaAllocator vma_allocator;
 
+    vk::detail::DispatchLoaderDynamic dispatcher;
+
 private:
     void createVkInstance();
     void createSurface();
