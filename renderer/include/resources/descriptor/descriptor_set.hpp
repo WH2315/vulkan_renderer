@@ -7,6 +7,9 @@
 
 namespace wen {
 
+class Renderer;
+class RenderPipeline;
+
 struct DescriptorSetLayoutBinding {
     DescriptorSetLayoutBinding(uint32_t binding, vk::DescriptorType descriptor_type, ShaderStages stage)
         : binding(binding), descriptor_type(descriptor_type), descriptor_count(1), stage(stage), samples(nullptr) {}

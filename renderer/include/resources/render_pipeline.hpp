@@ -27,7 +27,7 @@ public:
 template <class RenderPipelineClass, typename Options>
 class RenderPipelineTemplate : public RenderPipeline {
 public:
-    virtual ~RenderPipelineTemplate() = default;
+    ~RenderPipelineTemplate() override = default;
 
 
     void setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index = 0) {
@@ -41,7 +41,7 @@ public:
         this->push_constants = std::move(push_constants);
     }
 
-    virtual void compile(const Options& options = {}) = 0;
+    virtual void compile(const Options& options) = 0;
 };
 
 struct GraphicsRenderPipelineOptions {
@@ -58,7 +58,7 @@ public:
     ~GraphicsRenderPipeline() override;
 
     void setVertexInput(std::shared_ptr<VertexInput> vertex_input);
-    void compile(const GraphicsRenderPipelineOptions& options = {}) override;
+    void compile(const GraphicsRenderPipelineOptions& options) override;
 
     vk::PipelineBindPoint bind_point = vk::PipelineBindPoint::eGraphics;
 
