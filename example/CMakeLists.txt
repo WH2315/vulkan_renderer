@@ -1,2 +1,2 @@
-add_subdirectory(ray_tracing)
+add_subdirectory(path_tracing)
 add_subdirectory(scenes)
