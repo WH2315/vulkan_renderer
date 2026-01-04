@@ -1,0 +1,32 @@
+#pragma once
+
+#include <glm/glm.hpp>
+
+const float infinity = std::numeric_limits<float>::infinity();
+
+class Interval {
+public:
+    Interval() : min(+infinity), max(-infinity) {}
+    Interval(float min, float max) : min(min), max(max) {}
+    Interval(const Interval& a, const Interval& b) : min(glm::min(a.min, b.min)), max(glm::max(a.max, b.max)) {}
+
+    float size() const { return max - min; }
+    bool contains(float x) const { return min <= x && x <= max; }
+    bool inside(float x) const { return min < x && x < max; }
+    float clamp(float x) const {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x;
+    }
+
+    Interval extend(float delta) const { 
+        return Interval(min - delta * 0.5f, max + delta * 0.5f);
+    }
+
+    Interval operator+(float delta) const {
+        return Interval(min + delta, max + delta);
+    }
+
+    float min, max;
+    static const Interval empty, universe;
+};
