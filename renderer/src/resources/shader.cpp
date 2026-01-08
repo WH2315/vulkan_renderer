@@ -1,5 +1,5 @@
 #include "resources/shader.hpp"
-#include "base/utils.hpp"
+#include "resources/shader_includer.hpp"
 #include "manager.hpp"
 
 #include <glslang/Public/ShaderLang.h>
@@ -43,7 +43,8 @@ Shader::Shader(const std::string& filename, ShaderStage stage) {
     shader.setEnvInput(glslang::EShSourceGlsl, shader_stage, glslang::EShClientVulkan, version);
     shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_3);
     shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-    if (!shader.parse(GetDefaultResources(), version, ENoProfile, false, false, EShMessages::EShMsgDefault)) {
+    ShaderIncluder includer(filename);
+    if (!shader.parse(GetDefaultResources(), version, ENoProfile, false, false, EShMessages::EShMsgDefault, includer)) {
         WEN_ERROR("{}, {}", shader.getInfoLog(), shader.getInfoDebugLog())
         return;
     }

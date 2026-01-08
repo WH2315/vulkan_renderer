@@ -77,4 +77,24 @@ std::shared_ptr<NormalModel> Interface::loadNormalModel(const std::string& filen
     return std::make_shared<NormalModel>(model_dir_ + "/" + filename);
 }
 
+std::shared_ptr<StorageImage> Interface::createStorageImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageUsageFlags usage) {
+    return std::make_shared<StorageImage>(width, height, format, usage);
+}
+
+std::shared_ptr<RayTracingShaderProgram> Interface::createRayTracingShaderProgram() {
+    return std::make_shared<RayTracingShaderProgram>();
+}
+
+std::shared_ptr<RayTracingRenderPipeline> Interface::createRayTracingRenderPipeline(std::shared_ptr<RayTracingShaderProgram> shader_program) {
+    return std::make_shared<RayTracingRenderPipeline>(shader_program);
+}
+
+std::shared_ptr<AccelerationStructure> Interface::createAccelerationStructure() {
+    return std::make_shared<AccelerationStructure>();
+}
+
+std::shared_ptr<RayTracingInstance> Interface::createRayTracingInstance() {
+    return std::make_shared<RayTracingInstance>();
+}
+
 } // namespace wen

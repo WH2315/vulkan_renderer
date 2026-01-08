@@ -93,6 +93,8 @@ Offset NormalModel::upload(std::shared_ptr<VertexBuffer> vertex_buffer,
 NormalModel::~NormalModel() {
     vertices_.clear();
     meshes_.clear();
+    ray_tracing_vertex_buffer.reset();
+    ray_tracing_index_buffer.reset();
 }
 
 } // namespace wen

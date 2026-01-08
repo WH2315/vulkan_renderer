@@ -116,4 +116,15 @@ vk::SampleCountFlagBits getMaxUsableSampleCount() {
     return vk::SampleCountFlagBits::e1;
 }
 
+vk::DeviceAddress getBufferAddress(vk::Buffer buffer) {
+    vk::BufferDeviceAddressInfo info{};
+    info.setBuffer(buffer);
+    return manager->device->device.getBufferAddress(info);
+}
+
+vk::DeviceAddress getAccelerationStructureAddress(vk::AccelerationStructureKHR as) {
+    vk::AccelerationStructureDeviceAddressInfoKHR info{};
+    info.setAccelerationStructure(as);
+    return manager->device->device.getAccelerationStructureAddressKHR(info, manager->dispatcher);
+}
 } // namespace wen

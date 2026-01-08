@@ -1,5 +1,6 @@
 #include "base/enums.hpp"
 #include "base/utils.hpp"
+#include <glm/glm.hpp>
 
 namespace wen {
 
@@ -66,6 +67,14 @@ uint32_t convert<uint32_t>(IndexType type) {
 template <>
 vk::ShaderStageFlags convert<vk::ShaderStageFlags>(ShaderStages stages) {
     return vk::ShaderStageFlags(static_cast<uint32_t>(stages));
+}
+
+template <>
+vk::TransformMatrixKHR convert<vk::TransformMatrixKHR>(const glm::mat4 &matrix) {
+    vk::TransformMatrixKHR result;
+    auto matrix_t = glm::transpose(matrix);
+    memcpy(&result, &matrix_t, sizeof(vk::TransformMatrixKHR));
+    return result;
 }
 
 } // namespace wen

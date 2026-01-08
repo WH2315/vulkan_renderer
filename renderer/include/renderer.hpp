@@ -6,6 +6,7 @@
 #include "resources/vertex_input/index_buffer.hpp"
 #include "resources/framebuffer_set.hpp"
 #include "resources/normal_model.hpp"
+#include "ray_tracing/render_pipeline.hpp"
 
 namespace wen {
 
@@ -28,6 +29,9 @@ public:
     void bindPipeline(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline);
     void bindDescriptorSets(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline);
     void pushConstants(const std::shared_ptr<GraphicsRenderPipeline>& render_pipeline);
+    void bindPipeline(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline);
+    void bindDescriptorSets(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline);
+    void pushConstants(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline);
     void setViewport(float x, float y, float width, float height);
     void setScissor(int x, int y, uint32_t width, uint32_t height);
     void bindVertexBuffers(const std::vector<std::shared_ptr<VertexBuffer>>& vertex_buffers, uint32_t first_binding = 0);
@@ -37,8 +41,11 @@ public:
     void drawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t vertex_offset, uint32_t first_instance);
     void drawModel(const std::shared_ptr<NormalModel>& model, uint32_t instance_count, uint32_t first_instance);
     void drawMesh(const std::shared_ptr<Mesh>& mesh, uint32_t instance_count, uint32_t first_instance);
+    void traceRays(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline, uint32_t width, uint32_t height, uint32_t depth);
     void nextSubpass();
     void nextSubpass(const std::string& name);
+    uint32_t registerResourceRecreateCallback(const std::function<void()>& callback);
+    void unregisterResourceRecreateCallback(uint32_t callback_id);
 
 public:
     vk::CommandBuffer getCurrentBuffer() { return current_buffer_; }
@@ -64,6 +71,9 @@ private:
     std::vector<std::vector<vk::SubmitInfo>> in_flight_submit_infos_;
 
     uint32_t current_subpass_;
+
+    uint32_t current_callback_id_;
+    std::map<uint32_t, std::function<void()>> callbacks_;
 };
 
 } // namespace wen
