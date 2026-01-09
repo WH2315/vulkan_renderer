@@ -7,7 +7,7 @@ public:
     Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v, const std::shared_ptr<Material>& material);
 
     bool hit(const Ray& ray, Interval t, HitRecord& hit_record) const override;
-    float pdfValue(const glm::vec3& origin, const glm::vec3& direction) const override; 
+    float pdf(const glm::vec3& origin, const glm::vec3& direction) const override; 
     glm::vec3 random(const glm::vec3& origin) const override;
 
     glm::vec3 Q, u, v;

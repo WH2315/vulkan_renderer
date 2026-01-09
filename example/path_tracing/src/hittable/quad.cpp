@@ -50,7 +50,7 @@ bool Quad::isInterior(float a, float b, HitRecord& hit_record) {
     return true;
 }
 
-float Quad::pdfValue(const glm::vec3& origin, const glm::vec3& direction) const {
+float Quad::pdf(const glm::vec3& origin, const glm::vec3& direction) const {
     HitRecord hit_record;
     if (!hit(Ray(origin, direction), Interval(0.001f, infinity), hit_record)) {
         return 0.0f;

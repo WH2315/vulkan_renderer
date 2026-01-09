@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 #include "resources/material.hpp"
+#include <algorithm>
 #include <cmath>
 
 static float linear_to_gamma(float linear_component) {
@@ -25,10 +26,10 @@ static uint32_t convert(const glm::vec4& color) {
     b = linear_to_gamma(b);
 
     static const Interval intensity(0.000f, 0.999f);
-    const uint8_t rbyte = static_cast<uint8_t>(intensity.clamp(r) * 255.0f);
-    const uint8_t gbyte = static_cast<uint8_t>(intensity.clamp(g) * 255.0f);
-    const uint8_t bbyte = static_cast<uint8_t>(intensity.clamp(b) * 255.0f);
-    const uint8_t abyte = static_cast<uint8_t>(glm::clamp(a, 0.0f, 1.0f) * 255.0f);
+    const auto rbyte = static_cast<uint8_t>(intensity.clamp(r) * 255.0f);
+    const auto gbyte = static_cast<uint8_t>(intensity.clamp(g) * 255.0f);
+    const auto bbyte = static_cast<uint8_t>(intensity.clamp(b) * 255.0f);
+    const auto abyte = static_cast<uint8_t>(glm::clamp(a, 0.0f, 1.0f) * 255.0f);
 
     return (abyte << 24) | (bbyte << 16) | (gbyte << 8) | rbyte;
 }
@@ -61,7 +62,7 @@ void Renderer::render(const Camera& camera, const Scene& scene) {
     }
 
     thread_pool_.parallelFor(w, h, [&](size_t x, size_t y) {
-        const uint32_t idx = static_cast<uint32_t>(y * w + x);
+        const auto idx = static_cast<uint32_t>(y * w + x);
         for (uint32_t i = 0; i < samples_per_pixel_; i++) {
             // (-0.5, 0.5)
             glm::vec2 offset = {Random::Float() - 0.5f, Random::Float() - 0.5f};
@@ -71,7 +72,7 @@ void Renderer::render(const Camera& camera, const Scene& scene) {
         }
 
         // Average across all accumulated samples for this pixel.
-        const float sample_count = static_cast<float>(index_ * samples_per_pixel_);
+        const auto sample_count = static_cast<float>(index_ * samples_per_pixel_);
         glm::vec4 color = accumulation_[idx] / sample_count;
         data_[idx] = convert(color);
     });
@@ -104,30 +105,38 @@ glm::vec3 Renderer::traceRay(const Ray& ray, int depth) {
         return emitted;
     }
 
+    // Russian roulette termination to curb deep bounce cost while keeping unbiased weights.
+    glm::vec3 attenuation = scatter_record.attenuation;
+    const int roulette_start_depth = 5; // allow some guaranteed bounces before roulette
+    if (depth <= roulette_start_depth) {
+        float survival = glm::clamp(std::max({attenuation.r, attenuation.g, attenuation.b}), 0.05f, 0.95f);
+        if (Random::Float() > survival) {
+            return emitted;
+        }
+        attenuation /= survival;
+    }
+
     glm::vec3 scattered;
 
     if (!scene_->lights) {
-        scattered =
-            scatter_record.attenuation * traceRay(scatter_record.ray_out, depth - 1);
+        scattered = attenuation * traceRay(scatter_record.ray_out, depth - 1);
         return emitted + scattered;
     }
 
     if (!scatter_record.pdf) {
-        scattered =
-            scatter_record.attenuation * traceRay(scatter_record.ray_out, depth - 1);
+        scattered = attenuation * traceRay(scatter_record.ray_out, depth - 1);
         return scattered;
     }
 
     auto light = std::make_shared<HittablePDF>(scene_->lights, hit_record.point);
     MixturePDF mixture(light, scatter_record.pdf);
     Ray ray_out(hit_record.point, glm::normalize(mixture.generate()), ray.time);
-    float pdf_value = mixture.value(ray_out.direction);
-    float pdf = hit_record.material->scatteringPDF(hit_record, ray_out);
-    if (abs(pdf_value) < glm::epsilon<float>()) {
+    float pdf = mixture.pdf(ray_out.direction);
+    float brdf = hit_record.material->brdf(hit_record, ray_out);
+    if (abs(pdf) < glm::epsilon<float>()) {
         return emitted;
     }
-    scattered =
-        (scatter_record.attenuation * pdf * traceRay(ray_out, depth - 1)) / pdf_value;
+    scattered = (attenuation * brdf * traceRay(ray_out, depth - 1)) / pdf;
 
     return emitted + scattered;
 }

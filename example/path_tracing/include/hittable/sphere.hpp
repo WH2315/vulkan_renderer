@@ -8,7 +8,7 @@ public:
     Sphere(const glm::vec3& src, const glm::vec3& dst, float radius, const std::shared_ptr<Material>& material);
 
     bool hit(const Ray& ray, Interval t, HitRecord& hit_record) const override;
-    float pdfValue(const glm::vec3& origin, const glm::vec3& direction) const override; 
+    float pdf(const glm::vec3& origin, const glm::vec3& direction) const override; 
     glm::vec3 random(const glm::vec3& origin) const override;
 
     bool moving;

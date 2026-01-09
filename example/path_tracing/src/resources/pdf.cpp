@@ -7,7 +7,7 @@ CosinePDF::CosinePDF(const glm::vec3& w) {
     uvw_.build(w);
 }
 
-float CosinePDF::value(const glm::vec3& direction) const {
+float CosinePDF::pdf(const glm::vec3& direction) const {
     float cos_theta = glm::dot(glm::normalize(direction), uvw_.w());
     return glm::max(0.0f, cos_theta / glm::pi<float>());
 }
@@ -27,7 +27,7 @@ glm::vec3 CosinePDF::CosineDirection() {
 }
 
 // SpherePDF
-float SpherePDF::value(const glm::vec3& direction) const {
+float SpherePDF::pdf(const glm::vec3& direction) const {
     return 1.0f / (4.0f * glm::pi<float>());
 }
 
@@ -39,8 +39,8 @@ glm::vec3 SpherePDF::generate() const {
 HittablePDF::HittablePDF(const std::shared_ptr<Hittable>& hittable, const glm::vec3& origin)
     : hittable_(hittable), origin_(origin) {}
 
-float HittablePDF::value(const glm::vec3& direction) const {
-    return hittable_->pdfValue(origin_, direction);
+float HittablePDF::pdf(const glm::vec3& direction) const {
+    return hittable_->pdf(origin_, direction);
 }
 
 glm::vec3 HittablePDF::generate() const {
@@ -53,8 +53,8 @@ MixturePDF::MixturePDF(std::shared_ptr<PDF> p0, std::shared_ptr<PDF> p1) {
     p_[1] = p1;
 }
 
-float MixturePDF::value(const glm::vec3& direction) const {
-    return 0.5f * p_[0]->value(direction) + 0.5f * p_[1]->value(direction);
+float MixturePDF::pdf(const glm::vec3& direction) const {
+    return 0.5f * p_[0]->pdf(direction) + 0.5f * p_[1]->pdf(direction);
 }
 
 glm::vec3 MixturePDF::generate() const {

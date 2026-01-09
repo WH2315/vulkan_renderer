@@ -19,7 +19,7 @@ public:
     virtual ~Material() = default;
     virtual bool scatter(const Ray& ray_in, const HitRecord& hit_record, ScatterRecord& scatter_record) const { return false; }
     virtual glm::vec3 emitted(const HitRecord& hit_record) const { return glm::vec3(0.0f); }
-    virtual float scatteringPDF(const HitRecord& hit_record, const Ray& ray_out) const { return 0.0f; }
+    virtual float brdf(const HitRecord& hit_record, const Ray& ray_out) const { return 0.0f; }
 };
 
 // 朗伯材质
@@ -34,7 +34,7 @@ public:
         return true; 
     }
 
-    float scatteringPDF(const HitRecord& hit_record, const Ray& ray_out) const override {
+    float brdf(const HitRecord& hit_record, const Ray& ray_out) const override {
         float cos_theta = glm::dot(hit_record.normal, ray_out.direction);
         return glm::max(0.0f, cos_theta / glm::pi<float>());
     }
@@ -120,7 +120,7 @@ public:
         return true;
     }
 
-    float scatteringPDF(const HitRecord& hit_record, const Ray& ray_out) const override {
+    float brdf(const HitRecord& hit_record, const Ray& ray_out) const override {
         return 1.0f / (4.0f * glm::pi<float>());
     }
 
