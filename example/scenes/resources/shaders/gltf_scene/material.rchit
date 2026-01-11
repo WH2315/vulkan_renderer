@@ -23,7 +23,7 @@ layout(binding = 3, scalar) buffer InstanceAddressBuffer {
     InstanceAddress addresses[];
 } instance_address_buffer;
 
-// material data buffer
+// custom material data buffer
 layout(binding = 4, scalar) buffer MaterialDataBuffer {
     Material materials[];
 } material_data_buffer;

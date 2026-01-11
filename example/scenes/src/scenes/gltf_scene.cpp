@@ -122,7 +122,7 @@ void GLTFScene::initialize() {
         {2, vk::DescriptorType::eStorageImage, wen::ShaderStage::eRaygen},
         // instance address buffer
         {3, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // material data buffer
+        // custom material data buffer
         {4, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
         // GLTF: primitive data buffer
         {5, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
