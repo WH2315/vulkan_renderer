@@ -14,6 +14,12 @@
 #include "resources/sampler.hpp"
 #include "resources/push_constants/push_constants.hpp"
 #include "resources/normal_model.hpp"
+#include "resources/descriptor/storage_image.hpp"
+#include "ray_tracing/shader_program.hpp"
+#include "ray_tracing/render_pipeline.hpp"
+#include "ray_tracing/acceleration_structure.hpp"
+#include "ray_tracing/ray_tracing_instance.hpp"
+#include "ray_tracing/gltf/gltf_scene.hpp"
 
 namespace wen {
 
@@ -36,12 +42,19 @@ public:
     std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
     std::shared_ptr<PushConstants> createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos);
     std::shared_ptr<NormalModel> loadNormalModel(const std::string& filename);
+    std::shared_ptr<StorageImage> createStorageImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageUsageFlags usage = {});
+    std::shared_ptr<RayTracingShaderProgram> createRayTracingShaderProgram();
+    std::shared_ptr<RayTracingRenderPipeline> createRayTracingRenderPipeline(std::shared_ptr<RayTracingShaderProgram> shader_program);
+    std::shared_ptr<AccelerationStructure> createAccelerationStructure();
+    std::shared_ptr<RayTracingInstance> createRayTracingInstance();
+    std::shared_ptr<GLTFScene> loadGLTFScene(const std::string& filename, const std::vector<std::string>& attrs = {});
 
 private:
     std::string path_;
     std::string shader_dir_;
     std::string texture_dir_;
     std::string model_dir_;
+    std::string gltf_dir_;
 };
 
 } // namespace wen

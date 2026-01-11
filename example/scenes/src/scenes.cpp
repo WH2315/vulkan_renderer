@@ -92,9 +92,6 @@ void SceneManager::render() {
     }
 
     scene_->renderer->acquireNextImage();
-    if (!scene_->is_enable_ray_tracing) {
-        scene_->renderer->beginRenderPass();
-    }
 
     float dt = ImGui::GetIO().DeltaTime;
     const auto framebuffer_w = static_cast<float>(wen::renderer_config->getWidth());
@@ -148,6 +145,9 @@ void SceneManager::render() {
         auto viewport_w = std::clamp(scene_->viewport_size.x, 1.0f, framebuffer_w);
         auto viewport_h = std::clamp(scene_->viewport_size.y, 1.0f, framebuffer_h);
         scene_->update(dt, viewport_w, viewport_h);
+        if (!scene_->is_enable_ray_tracing) {
+            scene_->renderer->beginRenderPass();
+        }
         scene_->render(viewport_w, viewport_h);
         ImVec2 uv1{std::min(viewport_w / framebuffer_w, 1.0f),
                    std::min(viewport_h / framebuffer_h, 1.0f)};

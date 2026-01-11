@@ -1,6 +1,5 @@
 #include "resources/descriptor/image_texture.hpp"
 #include "core/log.hpp"
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 namespace wen {

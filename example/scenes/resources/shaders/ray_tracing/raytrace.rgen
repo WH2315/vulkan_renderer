@@ -1,0 +1,70 @@
+#version 460
+#extension GL_EXT_ray_tracing : require
+#extension GL_GOOGLE_include_directive : require
+
+#include "ray.glsl"
+#include "random.glsl"
+#include "ray_tracing.glsl"
+
+layout(binding = 0, set = 0) uniform accelerationStructureEXT tlas;
+layout(binding = 1, set = 0, rgba32f) uniform image2D image;
+
+layout(push_constant) uniform PushConstant {
+    vec3 position;
+    vec3 color;
+    float intensity; 
+    int sample_count;
+} constant;
+
+layout(binding = 1, set = 1) uniform Camera {
+    vec3 position;
+    mat4 view;
+    mat4 project;
+} camera;
+
+// per-ray data payload
+layout(location = 0) rayPayloadEXT HitPayload prd;
+
+void main() {
+    vec3 value = vec3(0);
+    for (int i = 0; i < constant.sample_count; i++) {
+        // gl_LaunchIDEXT 包含被渲染像素的整数坐标位置，pixel_point就是一个像素中斜线上的点
+        vec2 pixel_point = vec2(gl_LaunchIDEXT.xy) + vec2((i + 1.0f) / float(constant.sample_count + 1));
+        // gl_LaunchSizeEXT 包含了当执行 vkCmdTraceRaysKHR 指令时指定的渲染图片维度
+        // [0, 1] -> [-1, 1]
+        vec2 uv = pixel_point / gl_LaunchSizeEXT.xy;
+        uv = uv * 2 - 1;
+
+        // 光线方向
+        vec3 view_direction = normalize(inverse(camera.view) * vec4((inverse(camera.project) * vec4(uv, -1, 1)).xyz, 0)).xyz;
+
+        // 用于指示所有的几何体都按照不透明物体对待
+        uint ray_flags = gl_RayFlagsOpaqueEXT;
+
+        /*
+            通过调用 traceRayEXT 函数从相机发射光线
+            1. 光线没有击中任何物体时，将会调用未命中着色器组中索引为0的未击中着色器(raytrace.miss)
+            raytrace.miss 着色器将 prd.value 设置为 clear_color(背景色)
+            2. 光线击中物体时，调用 raytrace.rchit 最近命中着色器
+        */
+        traceRayEXT(
+            tlas,            // 顶层加速结构用于相交查询
+            ray_flags,       // 控制光线追踪的位域
+            0xff,            // cullMask
+            0,               // sbtRecordOffset   sbtRecordOffset 和 sbtRecordStride 控制每一个实体的 hitGroupId
+            0,               // sbtRecordStride   如何从底层加速结构命中组数组中获取命中组，这里只有一个命中组(raytrace.rchit)
+            0,               // missIndex 表示底层加速结构的未命中着色器组的索引，当没有与任何实体相交时将会调用该索引对应的未命中着色器
+            camera.position, // 光线的源点
+            0.001,           // Tmin
+            view_direction,  // 光线的方向
+            10000.0,         // Tmax
+            0                // payload (location = 0) -> prd
+        );
+
+        value += prd.value;
+    }
+    
+    // 将负载结果写入图片
+    vec3 color = value / float(constant.sample_count);
+    imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(color, 1.0f));
+}

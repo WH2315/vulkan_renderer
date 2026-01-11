@@ -33,7 +33,7 @@ vk::CommandBuffer CommandPool::allocateSingleUse() {
     begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     cmdbuf.begin(begin_info);
 
-    return std::move(cmdbuf);
+    return cmdbuf;
 }
 
 void CommandPool::freeSingleUse(vk::CommandBuffer cmdbuf) {

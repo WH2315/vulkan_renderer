@@ -53,7 +53,7 @@ bool Sphere::hit(const Ray& ray, Interval t, HitRecord& hit_record) const {
     return true;
 }
 
-float Sphere::pdfValue(const glm::vec3& origin, const glm::vec3& direction) const {
+float Sphere::pdf(const glm::vec3& origin, const glm::vec3& direction) const {
     HitRecord hit_record;
     if (!hit(Ray(origin, direction), Interval(0.001f, infinity), hit_record)) {
         return 0.0f;

@@ -3,6 +3,9 @@
 #include "scenes/ray_marching.hpp"
 #include "scenes/pbr_scene.hpp"
 #include "scenes/deferred_shading.hpp"
+#include "scenes/ray_tracing.hpp"
+#include "scenes/gltf_scene.hpp"
+#include "scenes/path_tracing.hpp"
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -29,8 +32,11 @@ int main() {
     scene_manager->addScene<RayMarching>("Ray Marching");
     scene_manager->addScene<PBRScene>("PBR Scene");
     scene_manager->addScene<DeferredShading>("Deferred Shading");
+    scene_manager->addScene<RayTracing>("Ray Tracing");
+    scene_manager->addScene<GLTFScene>("GLTF Scene");
+    scene_manager->addScene<PathTracing>("Path Tracing");
 
-    scene_manager->setActiveScene("Deferred Shading");
+    scene_manager->setActiveScene("Path Tracing");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();

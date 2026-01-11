@@ -1,0 +1,77 @@
+#version 460
+
+#extension GL_EXT_ray_tracing : require
+#extension GL_GOOGLE_include_directive : require
+
+#include "ray.glsl"
+#include "random.glsl"
+
+// camera
+layout(binding = 0) uniform Camera {
+    vec3 position;
+    mat4 view;
+    mat4 project;
+} camera;
+
+// rt_instance
+layout(binding = 1) uniform accelerationStructureEXT rt_instance;
+
+// output image
+layout(binding = 2, rgba32f) uniform image2D image;
+
+layout(push_constant) uniform PushConstant {
+    float time;
+    int sample_count;
+    int frame_index;
+    float roughness;
+    float metallic;
+    vec3 F0;
+    float intensity;
+} constant;
+
+layout(location = 0) rayPayloadEXT Ray ray;
+
+void main() {
+    vec3 color = vec3(0.0);
+    ray.state = uint((constant.time + 1) * gl_LaunchIDEXT.x * gl_LaunchIDEXT.y);     
+
+    for (int i = 0; i < constant.sample_count; ++i) {
+        vec2 center = vec2(gl_LaunchIDEXT.xy) + vec2(rnd(ray.state), rnd(ray.state));
+        center /= vec2(gl_LaunchSizeEXT.xy);
+        center.y = 1 - center.y;
+        center = center * 2 - 1;
+
+        mat4 inverse_view = inverse(camera.view);
+        vec3 camera_view_point = (inverse(camera.project) * vec4(center, -1, 1)).xyz;
+        camera_view_point *= 1 / -camera_view_point.z;
+        vec3 view_point = (inverse_view * vec4(camera_view_point, 1)).xyz;
+
+        ray.end = false;
+        ray.color = vec3(0);
+        ray.albedo = vec3(1);
+        ray.origin = camera.position;
+        ray.direction = normalize(view_point - camera.position);
+
+        while (!ray.end) {
+            traceRayEXT(
+                rt_instance,
+                gl_RayFlagsOpaqueEXT,
+                0xff,
+                0,
+                0,
+                0,
+                ray.origin,
+                0.001,
+                ray.direction,
+                10000.0,
+                0
+            );
+        }
+
+        color += ray.color / float(constant.sample_count);
+    }
+
+    float scale = 1.0f / float(constant.frame_index + 1);
+    vec3 old_color = imageLoad(image, ivec2(gl_LaunchIDEXT.xy)).xyz;
+    imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(mix(old_color, color, scale), 1));
+}

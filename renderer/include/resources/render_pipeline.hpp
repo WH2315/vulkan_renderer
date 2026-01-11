@@ -29,7 +29,6 @@ class RenderPipelineTemplate : public RenderPipeline {
 public:
     ~RenderPipelineTemplate() override = default;
 
-
     void setDescriptorSet(std::shared_ptr<DescriptorSet> descriptor_set, uint32_t index = 0) {
         if (index + 1 > descriptor_sets.size()) {
             descriptor_sets.resize(index + 1);

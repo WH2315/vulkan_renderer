@@ -3,6 +3,7 @@
 #include "resources/model.hpp"
 #include "resources/vertex_input/vertex_buffer.hpp"
 #include "resources/vertex_input/index_buffer.hpp"
+#include <glm/glm.hpp>
 #include <map>
 
 namespace wen {
@@ -50,6 +51,9 @@ public:
                   std::shared_ptr<IndexBuffer> index_buffer, Offset offset = {0, 0});
 
     ModelType getType() const override { return ModelType::eNormalModel; }
+
+    std::unique_ptr<Buffer> ray_tracing_vertex_buffer;
+    std::unique_ptr<Buffer> ray_tracing_index_buffer;
 
 private:
     std::vector<Vertex> vertices_;

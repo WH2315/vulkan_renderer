@@ -11,7 +11,7 @@ public:
     virtual ~Hittable() = default;
     virtual bool hit(const Ray& ray, Interval t, HitRecord& hit_record) const = 0;
     AABB aabb = AABB::empty;
-    virtual float pdfValue(const glm::vec3& origin, const glm::vec3& direction) const { return 0.0f;}
+    virtual float pdf(const glm::vec3& origin, const glm::vec3& direction) const { return 0.0f;}
     virtual glm::vec3 random(const glm::vec3& origin) const { return glm::vec3(1.0f, 0.0f, 0.0f); }
 };
 
@@ -36,11 +36,11 @@ public:
         return hitted;
     }
 
-    float pdfValue(const glm::vec3& origin, const glm::vec3& direction) const override {
+    float pdf(const glm::vec3& origin, const glm::vec3& direction) const override {
         float weight = 1.0f / hittables.size();
         float sum = 0.0f;
         for (const auto& hittable : hittables) {
-            sum += weight * hittable->pdfValue(origin, direction);
+            sum += weight * hittable->pdf(origin, direction);
         }
         return sum;
     }

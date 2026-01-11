@@ -28,6 +28,7 @@ Renderer::Renderer(std::shared_ptr<RenderPass> render_pass) {
 
 Renderer::~Renderer() {
     waitIdle();
+    callbacks_.clear();
     for (uint32_t i = 0; i < renderer_config->max_frames_in_flight; i++) {
         manager->device->device.destroySemaphore(image_available_semaphores_[i]);
         manager->device->device.destroySemaphore(render_finished_semaphores_[i]);
@@ -40,6 +41,9 @@ Renderer::~Renderer() {
 void Renderer::updateFramebuffers() {
     framebuffer_set.reset();
     framebuffer_set = std::make_unique<FramebufferSet>(*this);
+    for (auto& [callback_id, callback] : callbacks_) {
+        callback();
+    }
 }
 
 void Renderer::updateSwapchain() {
@@ -180,6 +184,27 @@ void Renderer::pushConstants(const std::shared_ptr<GraphicsRenderPipeline>& rend
     }
 }
 
+void Renderer::bindPipeline(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline) {
+    current_buffer_.bindPipeline(render_pipeline->bind_point, render_pipeline->pipeline);
+}
+
+void Renderer::bindDescriptorSets(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline) {
+    if (!render_pipeline->descriptor_sets.empty()) {
+        std::vector<vk::DescriptorSet> sets;
+        for (const auto& descriptor_set : render_pipeline->descriptor_sets) {
+            sets.push_back(descriptor_set.value()->descriptor_sets_[current_frame_]);
+        }
+        current_buffer_.bindDescriptorSets(render_pipeline->bind_point, render_pipeline->pipeline_layout, 0, sets, {});
+    }
+}
+
+void Renderer::pushConstants(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline) {
+    if (render_pipeline->push_constants.has_value()) {
+        auto push_constants = render_pipeline->push_constants.value();
+        current_buffer_.pushConstants(render_pipeline->pipeline_layout, push_constants->range.stageFlags, 0, push_constants->total_size, push_constants->constants.data());
+    }
+}
+
 void Renderer::setViewport(float x, float y, float width, float height) {
     vk::Viewport viewport{x, y, width, height, 0.0f, 1.0f};
     current_buffer_.setViewport(0, {viewport});
@@ -216,18 +241,23 @@ void Renderer::drawIndexed(uint32_t index_count, uint32_t instance_count, uint32
     current_buffer_.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
-void Renderer::drawModel(const std::shared_ptr<NormalModel>& model,
-                         uint32_t instance_count, uint32_t first_instance) {
-    current_buffer_.drawIndexed(model->index_count, instance_count,
-                                model->offset().index, model->offset().vertex,
-                                first_instance);
+void Renderer::drawModel(const std::shared_ptr<NormalModel>& model, uint32_t instance_count, uint32_t first_instance) {
+    current_buffer_.drawIndexed(model->index_count, instance_count, model->offset().index, model->offset().vertex, first_instance);
 }
 
-void Renderer::drawMesh(const std::shared_ptr<Mesh>& mesh, uint32_t instance_count,
-                        uint32_t first_instance) {
-    current_buffer_.drawIndexed(mesh->indices.size(), instance_count,
-                                mesh->offset.index, mesh->offset.vertex,
-                                first_instance);
+void Renderer::drawMesh(const std::shared_ptr<Mesh>& mesh, uint32_t instance_count, uint32_t first_instance) {
+    current_buffer_.drawIndexed(mesh->indices.size(), instance_count, mesh->offset.index, mesh->offset.vertex, first_instance);
+}
+
+void Renderer::traceRays(const std::shared_ptr<RayTracingRenderPipeline>& render_pipeline, uint32_t width, uint32_t height, uint32_t depth) {
+    current_buffer_.traceRaysKHR(
+        render_pipeline->raygen_region_,
+        render_pipeline->miss_region_,
+        render_pipeline->hit_region_,
+        render_pipeline->callable_region_,
+        width, height, depth,
+        manager->dispatcher
+    );
 }
 
 void Renderer::nextSubpass() {
@@ -240,6 +270,16 @@ void Renderer::nextSubpass(const std::string& name) {
     while (current_subpass_ != index) {
         nextSubpass();
     }
+}
+
+uint32_t Renderer::registerResourceRecreateCallback(const std::function<void()>& callback) {
+    uint32_t callback_id = current_callback_id_++;
+    callbacks_[callback_id] = callback;
+    return callback_id;
+}
+
+void Renderer::unregisterResourceRecreateCallback(uint32_t callback_id) {
+    callbacks_.erase(callback_id);
 }
 
 } // namespace wen
