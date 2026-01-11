@@ -24,6 +24,7 @@ public:
     enum class ModelType {
         eNormalModel,
         eGLTFPrimitive,
+        eSphereModel
     };
 
 public:

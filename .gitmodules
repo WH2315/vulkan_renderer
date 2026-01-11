@@ -22,3 +22,6 @@
 [submodule "3rdlibs/tinyobjloader"]
 	path = 3rdlibs/tinyobjloader
 	url = https://github.com/tinyobjloader/tinyobjloader.git
+[submodule "3rdlibs/tinygltf"]
+	path = 3rdlibs/tinygltf
+	url = https://github.com/syoyo/tinygltf.git

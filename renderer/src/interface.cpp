@@ -7,6 +7,7 @@ Interface::Interface(const std::string& path) : path_(path) {
     shader_dir_ = path_ + "/shaders";
     texture_dir_ = path_ + "/textures";
     model_dir_ = path_ + "/models";
+    gltf_dir_ = path_ + "/gltf";
 }
 
 std::shared_ptr<RenderPass> Interface::createRenderPass(bool auto_load) {
@@ -95,6 +96,10 @@ std::shared_ptr<AccelerationStructure> Interface::createAccelerationStructure() 
 
 std::shared_ptr<RayTracingInstance> Interface::createRayTracingInstance() {
     return std::make_shared<RayTracingInstance>();
+}
+
+std::shared_ptr<GLTFScene> Interface::loadGLTFScene(const std::string& filename, const std::vector<std::string>& attrs) {
+    return std::make_shared<GLTFScene>(gltf_dir_ + "/" + filename, attrs);
 }
 
 } // namespace wen

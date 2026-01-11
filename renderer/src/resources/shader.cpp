@@ -45,13 +45,13 @@ Shader::Shader(const std::string& filename, ShaderStage stage) {
     shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
     ShaderIncluder includer(filename);
     if (!shader.parse(GetDefaultResources(), version, ENoProfile, false, false, EShMessages::EShMsgDefault, includer)) {
-        WEN_ERROR("{}, {}", shader.getInfoLog(), shader.getInfoDebugLog())
+        WEN_ERROR("Shader parse failed (file: {}): {}, {}", filename, shader.getInfoLog(), shader.getInfoDebugLog())
         return;
     }
     glslang::TProgram program;
     program.addShader(&shader);
     if (!program.link(EShMessages::EShMsgDefault)) {
-        WEN_ERROR("{}, {}", shader.getInfoLog(), shader.getInfoDebugLog())
+        WEN_ERROR("Shader link failed (file: {}): {}, {}", filename, shader.getInfoLog(), shader.getInfoDebugLog())
         return;
     }
     const auto intermediate = program.getIntermediate(shader_stage);

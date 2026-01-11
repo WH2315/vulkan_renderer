@@ -95,6 +95,7 @@ struct CustomDataRegister {
             WEN_ERROR("CustomDataRegister: CustomData {} has been registered", typeid(type_t).name())
             return;
         }
+        WEN_DEBUG("CustomDataRegister: Register CustomData {}, hash_code {}", typeid(type_t).name(), hash_code)
         custom_data_wrapper_map[hash_code] = {
             .size = sizeof(type_t),
             .create = [] {
@@ -154,7 +155,7 @@ struct CustomDataRegister {
         auto hash = getClassHashCode<T>();
         auto it = group.custom_data_map.find(hash);
         if (it == group.custom_data_map.end() || it->second == nullptr) {
-            WEN_ERROR("CustomDataRegister: custom data not registered")
+            WEN_ERROR("CustomDataRegister: custom data ({}) not registered", hash)
             return 0;
         }
 

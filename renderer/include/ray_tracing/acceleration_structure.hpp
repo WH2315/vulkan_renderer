@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/normal_model.hpp"
+#include "ray_tracing/gltf/gltf_scene.hpp"
 
 namespace wen {
 
@@ -23,6 +24,7 @@ public:
     AccelerationStructure() = default;
     ~AccelerationStructure();
     void addModel(std::shared_ptr<Model> model);
+    void addGLTFScene(std::shared_ptr<GLTFScene> scene);
     void build(bool is_update, bool allow_update);
 
 private:
@@ -31,6 +33,7 @@ private:
     std::unique_ptr<StorageBuffer> scratch_ = {};
     uint64_t current_scratch_size_ = 0;
     std::vector<std::shared_ptr<NormalModel>> models_ = {};
+    std::vector<std::shared_ptr<GLTFScene>> scenes_ = {};
 };
 
 } // namespace wen

@@ -8,6 +8,7 @@ namespace wen {
 RayTracingInstance::RayTracingInstance() : instance_count_(0) {
     register_ = std::make_unique<CustomDataRegister<InstanceCreateInfo>>();
     register_->registerCustomData<InstanceAddress>();
+    register_->registerCustomData<GLTFPrimitive::GLTFPrimitiveData>();
 }
 
 RayTracingInstance::~RayTracingInstance() {
@@ -178,8 +179,19 @@ InstanceAddress RayTracingInstance::createInstanceAddress(Model& model) {
                     dynamic_cast<NormalModel&>(model).ray_tracing_index_buffer->buffer),
             };
         case Model::ModelType::eGLTFPrimitive:
-            return {};
+            return {
+                getBufferAddress(dynamic_cast<GLTFPrimitive&>(model)
+                                     .scene_.ray_tracing_vertex_buffer->buffer),
+                getBufferAddress(dynamic_cast<GLTFPrimitive&>(model)
+                                     .scene_.ray_tracing_index_buffer->buffer),
+            };
+        case Model::ModelType::eSphereModel:
+            return {
+                0,
+                0,
+            };
     }
+    return {};
 }
 
 } // namespace wen

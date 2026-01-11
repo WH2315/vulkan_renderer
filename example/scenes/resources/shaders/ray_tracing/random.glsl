@@ -25,4 +25,4 @@ uint lcg(inout uint prev) {
 // 生成一个在 [0, 1) 范围中的单精度浮点型随机，并初始化之前的（prev）随机数生成器
 float rnd(inout uint prev) {
     return (float(lcg(prev)) / float(0x01000000));
-} 
+}

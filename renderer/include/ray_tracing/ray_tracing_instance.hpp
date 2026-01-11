@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ray_tracing/custom_data.hpp"
-#include "resources/model.hpp"
-#include <glm/glm.hpp>
+#include "ray_tracing/gltf/gltf_scene.hpp"
 
 namespace wen {
 
@@ -30,7 +29,7 @@ public:
     }
 
     template <class ...Args>
-    void addModel(uint32_t id, uint32_t binding, std::shared_ptr<Model> model, const glm::mat4& matrix, Args&&... args) {
+    void addNormalModel(uint32_t id, uint32_t binding, std::shared_ptr<Model> model, const glm::mat4& matrix, Args&&... args) {
         register_->addInstance(
             id,
             {
@@ -42,6 +41,22 @@ public:
             std::forward<Args>(args)...
         );
     }
+    template <class ...Args>
+    void addGLTFScene(uint32_t id, uint32_t binding, std::shared_ptr<GLTFScene> scene, Args&&... args) {
+        scene->build([&](auto* node, auto primitive) {
+            register_->addInstance(
+                id,
+                {
+                    .binding = binding,
+                    .model = primitive,
+                    .transform = node->getWorldMatrix(),
+                },
+                createInstanceAddress(*primitive),
+                primitive->getData(),
+                std::forward<Args>(args)...
+            );
+        });
+    }
 
     template <class CustomInstanceData>
     std::shared_ptr<StorageBuffer> getCustomInstanceDataBuffer() {
@@ -49,6 +64,9 @@ public:
     }
     auto getInstanceAddressBuffer() {
         return getCustomInstanceDataBuffer<InstanceAddress>();
+    }
+    auto getPrimitiveDataBuffer() {
+        return getCustomInstanceDataBuffer<GLTFPrimitive::GLTFPrimitiveData>();
     }
 
     void build(bool allow_update);
@@ -61,7 +79,7 @@ public:
     template <class CustomInstanceData>
     using FunUpdateCustomData = std::function<void(uint32_t, CustomInstanceData&)>;
     template <class CustomInstanceData>
-    void updata(uint32_t id, FunUpdateCustomData<CustomInstanceData> callback) {
+    void update(uint32_t id, FunUpdateCustomData<CustomInstanceData> callback) {
         register_->multiThreadUpdate(id, [=, this](uint32_t index, uint32_t begin, uint32_t end) {
             auto* ptr = static_cast<std::remove_reference_t<CustomInstanceData*>>(getCustomInstanceDataBuffer<CustomInstanceData>()->map());
             ptr += begin;
