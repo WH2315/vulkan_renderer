@@ -145,18 +145,19 @@ void main() {
     // 但对于roughness不为1的物体，也就是光滑的物体，越光滑，cosine重要性采样的效果越差
     // 所以同样使用完美镜面反射采样一个出射方向
     vec3 reflect_direction = reflect(ray.direction, normal);
+    float reflect_pdf = 1;
 
-    // 使用分支采样避免对delta项做线性混合
-    float p_diffuse = clamp(roughness, 0.0, 1.0);
-    float pdf;
-    if (rnd(ray.state) < p_diffuse) {
-        ray.direction = cosine_direction;
-        pdf = cosine_pdf * p_diffuse;
-    } else {
-        ray.direction = reflect_direction;
-        pdf = 1.0 - p_diffuse; // delta项的概率质量
-    }
-    ray.direction = normalize(ray.direction);
+    // 混合两种采样方式
+    ray.direction = normalize(mix(
+        reflect_direction,
+        cosine_direction,
+        roughness
+    ));
+    float pdf = mix(
+        reflect_pdf,
+        cosine_pdf,
+        roughness
+    );
 
     // 俄罗斯轮盘赌，每条光线有prob的概率继续传播
     ray.end = rnd(ray.state) > constant.prob;
