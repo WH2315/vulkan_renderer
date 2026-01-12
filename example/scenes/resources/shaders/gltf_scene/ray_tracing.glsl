@@ -34,3 +34,8 @@ struct GLTFMaterial {
     float roughness_factor;
     int metallic_roughness_texture;
 };
+
+struct Sphere {
+    vec3 center;
+    float radius;
+};

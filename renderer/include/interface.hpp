@@ -20,6 +20,7 @@
 #include "ray_tracing/acceleration_structure.hpp"
 #include "ray_tracing/ray_tracing_instance.hpp"
 #include "ray_tracing/gltf/gltf_scene.hpp"
+#include "ray_tracing/sphere_model.hpp"
 
 namespace wen {
 
@@ -48,6 +49,7 @@ public:
     std::shared_ptr<AccelerationStructure> createAccelerationStructure();
     std::shared_ptr<RayTracingInstance> createRayTracingInstance();
     std::shared_ptr<GLTFScene> loadGLTFScene(const std::string& filename, const std::vector<std::string>& attrs = {});
+    std::shared_ptr<SphereModel> createSphereModel();
 
 private:
     std::string path_;

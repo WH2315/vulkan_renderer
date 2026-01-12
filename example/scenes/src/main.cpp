@@ -36,7 +36,7 @@ int main() {
     scene_manager->addScene<GLTFScene>("GLTF Scene");
     scene_manager->addScene<PathTracing>("Path Tracing");
 
-    scene_manager->setActiveScene("Path Tracing");
+    scene_manager->setActiveScene("GLTF Scene");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();

@@ -102,4 +102,8 @@ std::shared_ptr<GLTFScene> Interface::loadGLTFScene(const std::string& filename,
     return std::make_shared<GLTFScene>(gltf_dir_ + "/" + filename, attrs);
 }
 
+std::shared_ptr<SphereModel> Interface::createSphereModel() {
+    return std::make_shared<SphereModel>();
+}
+
 } // namespace wen

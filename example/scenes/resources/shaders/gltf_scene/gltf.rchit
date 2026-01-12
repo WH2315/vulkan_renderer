@@ -11,32 +11,32 @@
 #include "ray_tracing.glsl"
 
 // instance address buffer
-layout(binding = 3, scalar) readonly buffer InstanceAddressBuffer {
+layout(binding = 5, scalar) readonly buffer InstanceAddressBuffer {
     InstanceAddress addresses[];
 } instance_address_buffer;
 
 // GLTF: primitive data buffer
-layout(binding = 5, scalar) readonly buffer PrimitiveDataBuffer {
+layout(binding = 7, scalar) readonly buffer PrimitiveDataBuffer {
     GLTFPrimitiveData primitives[];
 } primitive_data_buffer;
 
 // material buffer
-layout(binding = 6, scalar) readonly buffer MaterialBuffer {
+layout(binding = 8, scalar) readonly buffer MaterialBuffer {
     GLTFMaterial materials[];
 } material_buffer;
 
 // NORMAL
-layout(binding = 7, scalar) readonly buffer NormalBuffer {
+layout(binding = 9, scalar) readonly buffer NormalBuffer {
     vec3 normals[];
 } normal_buffer;
 
 // TEXCOORD_0
-layout(binding = 8, scalar) readonly buffer Texcoord0Buffer {
+layout(binding = 10, scalar) readonly buffer Texcoord0Buffer {
     vec2 texcoords0[];
 } texcoord0_buffer;
 
 // all textures
-layout(binding = 9) uniform sampler2D textures[];
+layout(binding = 11) uniform sampler2D textures[];
 
 // 物体的位置
 layout(buffer_reference, scalar) buffer Vertices {

@@ -19,6 +19,7 @@ void AccelerationStructure::addModel(std::shared_ptr<Model> model) {
             WEN_ERROR("GLTFPrimitive is used to addGLTFScene!")
             break;
         case Model::ModelType::eSphereModel:
+            sphere_models_.emplace_back(std::dynamic_pointer_cast<SphereModel>(model));
             break;
     }
 }
@@ -29,7 +30,7 @@ void AccelerationStructure::addGLTFScene(std::shared_ptr<GLTFScene> scene) {
 
 void AccelerationStructure::build(bool is_update, bool allow_update) {
     std::vector<AccelerationStructureInfo> infos;
-    infos.reserve(models_.size() + scenes_.size());
+    infos.reserve(models_.size() + scenes_.size() + sphere_models_.size());
 
     uint64_t max_staging_size = current_staging_size_,
              max_scratch_size = current_scratch_size_;
@@ -175,6 +176,42 @@ void AccelerationStructure::build(bool is_update, bool allow_update) {
                                         is_update ? as_info.size_info.updateScratchSize
                                                   : as_info.size_info.buildScratchSize);
         });
+    }
+    for (auto& model : sphere_models_) {
+        if (!is_update) {
+            if (model->aabbs_.empty()) {
+                model->build();
+            }
+            model->blas_info = std::make_unique<ModelBLASInfo>();
+        }
+        auto max_primitive_count = static_cast<uint32_t>(model->aabbs_.size());
+        auto& as_info = infos.emplace_back(*(model->blas_info.value()));
+
+        as_info.geometries.emplace_back()
+            .aabbs.setData(getBufferAddress(model->aabbs_buffer_->getBuffer()))
+            .setStride(sizeof(SphereModel::SphereAABBData))
+            .sType = vk::StructureType::eAccelerationStructureGeometryAabbsDataKHR;
+        as_info.as_geometries.emplace_back()
+            .setGeometry(as_info.geometries.back())
+            .setGeometryType(vk::GeometryTypeKHR::eAabbs)
+            .setFlags(vk::GeometryFlagBitsKHR::eOpaque);
+        as_info.build_range_infos.emplace_back()
+            .setFirstVertex(0)
+            .setPrimitiveOffset(0)
+            .setPrimitiveCount(max_primitive_count)
+            .setTransformOffset(0);
+        as_info.build_info.setType(vk::AccelerationStructureTypeKHR::eBottomLevel)
+            .setMode(mode)
+            .setFlags(flags)
+            .setGeometries(as_info.as_geometries);
+        as_info.size_info =
+            manager->device->device.getAccelerationStructureBuildSizesKHR(
+                vk::AccelerationStructureBuildTypeKHR::eDevice, as_info.build_info,
+
+                max_primitive_count, manager->dispatcher);
+        max_scratch_size =
+            std::max(max_scratch_size, is_update ? as_info.size_info.updateScratchSize
+                                                 : as_info.size_info.buildScratchSize);
     }
 
     // create staging and scratch buffers if needed.
@@ -400,6 +437,7 @@ void AccelerationStructure::build(bool is_update, bool allow_update) {
     manager->device->device.destroyQueryPool(query_pool);
     models_.clear();
     scenes_.clear();
+    sphere_models_.clear();
 }
 
 } // namespace wen

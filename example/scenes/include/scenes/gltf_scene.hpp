@@ -35,10 +35,8 @@ private:
     std::unique_ptr<Camera> camera_;
 
     Material material_;
-    glm::vec3 model_position_ = glm::vec3(-1, 1, 0);
-    float model_scale_ = 1.0f;
 
-    std::shared_ptr<wen::NormalModel> model1_;
+    std::shared_ptr<wen::SphereModel> model1_;
     std::shared_ptr<wen::NormalModel> model2_;
     std::shared_ptr<wen::GLTFScene> scene_;
     std::shared_ptr<wen::AccelerationStructure> as_;

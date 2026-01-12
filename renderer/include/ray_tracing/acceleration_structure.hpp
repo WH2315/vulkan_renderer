@@ -2,6 +2,7 @@
 
 #include "resources/normal_model.hpp"
 #include "ray_tracing/gltf/gltf_scene.hpp"
+#include "ray_tracing/sphere_model.hpp"
 
 namespace wen {
 
@@ -34,6 +35,7 @@ private:
     uint64_t current_scratch_size_ = 0;
     std::vector<std::shared_ptr<NormalModel>> models_ = {};
     std::vector<std::shared_ptr<GLTFScene>> scenes_ = {};
+    std::vector<std::shared_ptr<SphereModel>> sphere_models_ = {};
 };
 
 } // namespace wen

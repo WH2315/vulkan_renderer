@@ -33,14 +33,61 @@ void GLTFScene::initialize() {
 
     scene_ =
         interface->loadGLTFScene("Sponza/glTF/Sponza.gltf", {"NORMAL", "TEXCOORD_0"});
-    model1_ = interface->loadNormalModel("ray_tracing/sphere.obj");
+    model1_ = interface->createSphereModel();
+    model1_->registerCustomSphereData<Material>();
+    std::random_device device;
+    std::mt19937 generator(device());
+    std::normal_distribution<float> distribution(0, 1.0f);
+    std::normal_distribution<float> scaleDistribution(0.2f, 0.1f);
+    std::uniform_real_distribution<float> colorDistribution(0, 1);
+    for (int i = 0; i < 200; i++) {
+        float r = scaleDistribution(generator);
+        glm::vec3 color{colorDistribution(generator), colorDistribution(generator),
+                        colorDistribution(generator)};
+        model1_->addSphereModel(
+            0,
+            {distribution(generator) * 4, r + (distribution(generator) > 0 ? 4 : 0),
+             distribution(generator) * 4},
+            r,
+            Material{
+                .albedo = color,
+                .roughness =
+                    colorDistribution(generator) * colorDistribution(generator),
+                .emissive_color = glm::vec3{1},
+                .emissive_intensity = colorDistribution(generator) * 1.2f,
+            });
+    }
+    model1_->addSphereModel(0,
+                            {
+                                -2, 1, 0
+    },
+                            0.4, Material{.albedo = {1, 0.4, 0.4}, .roughness = 1});
+    // 非金属反射
+    model1_->addSphereModel(
+        0,
+        {
+            0, 1, 0
+    },
+        0.7,
+        Material{.albedo = {0.4, 0.4, 1}, .roughness = 1, .specular_probability = 0.2});
+    // 金属反射
+    model1_->addSphereModel(
+        0,
+        {
+            2, 1, 0
+    },
+        1,
+        Material{.albedo = {0.4, 0.4, 1}, .roughness = 0, .specular_probability = 0});
+    // 大地
+    model1_->addSphereModel(
+        0,
+        {
+            0, -500, 0
+    },
+        500,
+        Material{
+            .albedo = {0.8, 0.5, 0.25}, .roughness = 1.0, .emissive_intensity = 0});
     model2_ = interface->loadNormalModel("dragon.obj");
-    material_ = Material{.albedo = glm::vec3(0.8f, 0.5f, 0.25f),
-                         .roughness = 0.6f,
-                         .specular_albedo = glm::vec3(1.0f),
-                         .specular_probability = 0.2f,
-                         .emissive_color = glm::vec3(1.0f, 0.9f, 0.8f),
-                         .emissive_intensity = 0.5f};
     as_ = interface->createAccelerationStructure();
     as_->addModel(model1_);
     as_->addModel(model2_);
@@ -49,32 +96,11 @@ void GLTFScene::initialize() {
     as_.reset();
     rt_instance_ = interface->createRayTracingInstance();
     rt_instance_->registerCustomInstanceData<Material>();
-    rt_instance_->addNormalModel(0, 0, model1_, glm::mat4(1.0f));
-    std::random_device device;
-    std::mt19937 generator(device());
-    std::normal_distribution<float> distribution(0, 0.8f);
-    std::normal_distribution<float> scaleDistribution(0.3f, 0.2f);
-    std::uniform_real_distribution<float> colorDistribution(0, 1);
-    for (int i = 0; i < 200; i++) {
-        auto position = glm::vec3(distribution(generator) * 4,
-                                  distribution(generator) > 0 ? 4 : 0.5f,
-                                  distribution(generator) * 2);
-        auto scale = scaleDistribution(generator);
-        auto transform =
-            glm::translate(position) * glm::scale(glm::mat4(1.0f), glm::vec3(scale));
-        auto material = Material{
-            .emissive_color =
-                {
-                                 colorDistribution(generator),
-                                 colorDistribution(generator),
-                                 colorDistribution(generator),
-                                 },
-            .emissive_intensity = 0.8f,
-        };
-        rt_instance_->addNormalModel(1, 0, model1_, transform, material);
-    }
-    rt_instance_->addNormalModel(1, 0, model2_, glm::translate(glm::vec3(-1, 3, 0)));
-    rt_instance_->addGLTFScene(2, 1, scene_);
+    rt_instance_->addNormalModel(0, 0, model1_, glm::mat4(1));
+    material_ = Material{.albedo = glm::vec3(0.8f, 0.5f, 0.25f), .roughness = 0.6f};
+    rt_instance_->addNormalModel(1, 1, model2_, glm::translate(glm::vec3(-1, 0.5, 0)),
+                                 material_);
+    rt_instance_->addGLTFScene(2, 2, scene_);
     rt_instance_->build(true);
 
     // camera
@@ -101,15 +127,20 @@ void GLTFScene::initialize() {
     auto raygen =
         interface->loadShader("gltf_scene/gltf.rgen", wen::ShaderStage::eRaygen);
     auto miss = interface->loadShader("gltf_scene/gltf.rmiss", wen::ShaderStage::eMiss);
-    auto material = interface->loadShader("gltf_scene/material.rchit",
-                                          wen::ShaderStage::eClosestHit);
+    auto sphere_rchit =
+        interface->loadShader("gltf_scene/sphere.rchit", wen::ShaderStage::eClosestHit);
+    auto sphere_rint = interface->loadShader("gltf_scene/sphere.rint",
+                                             wen::ShaderStage::eIntersection);
+    auto triangle_rchit = interface->loadShader("gltf_scene/triangle.rchit",
+                                                wen::ShaderStage::eClosestHit);
     auto closest =
         interface->loadShader("gltf_scene/gltf.rchit", wen::ShaderStage::eClosestHit);
 
     rt_sp_ = interface->createRayTracingShaderProgram();
     rt_sp_->setRaygenShader(raygen);
     rt_sp_->setMissShader(miss);
-    rt_sp_->setHitGroup({material, std::nullopt});
+    rt_sp_->setHitGroup({sphere_rchit, sphere_rint});
+    rt_sp_->setHitGroup({triangle_rchit, std::nullopt});
     rt_sp_->setHitGroup({closest, std::nullopt});
     rt_ds_ = interface->createDescriptorSet();
     rt_ds_->addDescriptors({
@@ -120,33 +151,40 @@ void GLTFScene::initialize() {
          wen::ShaderStage::eRaygen | wen::ShaderStage::eClosestHit},
         // output image
         {2, vk::DescriptorType::eStorageImage, wen::ShaderStage::eRaygen},
-        // instance address buffer
-        {3, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // custom material data buffer
+        // sphere data buffer
+        {3, vk::DescriptorType::eStorageBuffer,
+         wen::ShaderStage::eClosestHit | wen::ShaderStage::eIntersection},
+        // custom sphere material data buffer
         {4, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // GLTF: primitive data buffer
+        // instance address buffer
         {5, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // material buffer
+        // custom material data buffer
         {6, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // NORMAL
+        // GLTF: primitive data buffer
         {7, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
-        // TEXCOORD_0
+        // material buffer
         {8, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
+        // NORMAL
+        {9, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
+        // TEXCOORD_0
+        {10, vk::DescriptorType::eStorageBuffer, wen::ShaderStage::eClosestHit},
         // all textures
-        {9, vk::DescriptorType::eCombinedImageSampler, scene_->getTexturesCount(),
+        {11, vk::DescriptorType::eCombinedImageSampler, scene_->getTexturesCount(),
          wen::ShaderStage::eClosestHit}
     });
     rt_ds_->build();
     rt_ds_->bindUniform(0, camera_->uniform_buffer);
     rt_ds_->bindAccelerationStructure(1, rt_instance_);
     rt_ds_->bindStorageImage(2, image_);
-    rt_ds_->bindStorageBuffer(3, rt_instance_->getInstanceAddressBuffer());
-    rt_ds_->bindStorageBuffer(4, rt_instance_->getCustomInstanceDataBuffer<Material>());
-    rt_ds_->bindStorageBuffer(5, rt_instance_->getPrimitiveDataBuffer());
-    rt_ds_->bindStorageBuffer(6, scene_->getMaterialBuffer());
-    rt_ds_->bindStorageBuffer(7, scene_->getAttrBuffer("NORMAL"));
-    rt_ds_->bindStorageBuffer(8, scene_->getAttrBuffer("TEXCOORD_0"));
-    scene_->bindTexturesSamplers(rt_ds_, 9);
+    rt_ds_->bindStorageBuffer(3, model1_->getSphereDataBuffer());
+    rt_ds_->bindStorageBuffer(4, model1_->getCustomSphereDataBuffer<Material>());
+    rt_ds_->bindStorageBuffer(5, rt_instance_->getInstanceAddressBuffer());
+    rt_ds_->bindStorageBuffer(6, rt_instance_->getCustomInstanceDataBuffer<Material>());
+    rt_ds_->bindStorageBuffer(7, rt_instance_->getPrimitiveDataBuffer());
+    rt_ds_->bindStorageBuffer(8, scene_->getMaterialBuffer());
+    rt_ds_->bindStorageBuffer(9, scene_->getAttrBuffer("NORMAL"));
+    rt_ds_->bindStorageBuffer(10, scene_->getAttrBuffer("TEXCOORD_0"));
+    scene_->bindTexturesSamplers(rt_ds_, 11);
     rt_rp_ = interface->createRayTracingRenderPipeline(rt_sp_);
     rt_rp_->setDescriptorSet(rt_ds_, 0);
     rt_rp_->setPushConstants(pcs_);
@@ -205,12 +243,8 @@ void GLTFScene::update(float ts, float w, float h) {
     pcs_->pushConstant("frame_index", &frame_index_);
     frame_index_++;
 
-    rt_instance_->update(0, [&](uint32_t index, auto updateTransform, auto) {
-        updateTransform(glm::translate(model_position_) *
-                        glm::scale(glm::mat4(1.0f), glm::vec3(model_scale_)));
-    });
     rt_instance_->update<Material>(
-        0, [&](uint32_t index, auto& material) { material = material_; });
+        1, [&](uint32_t index, auto& material) { material = material_; });
 }
 
 void GLTFScene::render(float w, float h) {
@@ -252,8 +286,6 @@ void GLTFScene::imgui() {
     pcs_->pushConstant("max_ray_recursion_depth", &max_ray_recursion_depth);
 
     ImGui::SeparatorText("Model Material");
-    changed |= ImGui::DragFloat3("Model Position", &model_position_.x, 0.01f);
-    changed |= ImGui::SliderFloat("Model Scale", &model_scale_, 0.1f, 10.0f);
     changed |= ImGui::ColorEdit3("Albedo", &material_.albedo.r);
     changed |= ImGui::SliderFloat("Roughness", &material_.roughness, 0, 1);
     changed |= ImGui::ColorEdit3("Specular Albedo", &material_.specular_albedo.r);
