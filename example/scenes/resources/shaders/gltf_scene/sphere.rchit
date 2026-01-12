@@ -22,8 +22,11 @@ void main() {
     Sphere sphere = sphere_data_buffer.spheres[gl_PrimitiveID];
     Material material = sphere_material_data_buffer.materials[gl_PrimitiveID];
 
+    // 把球心从物体局部空间变换到世界空间
     vec3 center = (gl_ObjectToWorldEXT * vec4(sphere.center, 1.0)).xyz;
-    vec3 position = gl_WorldRayOriginEXT + gl_WorldRayDirectionEXT * gl_HitTEXT;
+    // o + td，得到世界空间的命中位置 
+    vec3 position = gl_WorldRayOriginEXT + gl_HitTEXT * gl_WorldRayDirectionEXT;
+    // 球面法线
     vec3 normal = normalize(position - center);
 
     if (sphere.radius > 100) {

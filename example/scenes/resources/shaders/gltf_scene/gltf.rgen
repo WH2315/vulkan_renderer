@@ -35,26 +35,41 @@ void main() {
     ray.state = uint((constant.time + 1) * gl_LaunchIDEXT.x * gl_LaunchIDEXT.y);     
 
     for (int i = 0; i < constant.sample_count; ++i) {
+        // 把当前光线的发射像素坐标随机抖动后，归一化并映射到标准化设备坐标（-1 到 1）
+        // 取当前发射的像素索引 gl_LaunchIDEXT.xy，加上一组基于 ray.state 的随机数，
+        // 给像素中心做微小抖动（抗锯齿/采样抖动）
         vec2 center = vec2(gl_LaunchIDEXT.xy) + vec2(rnd(ray.state), rnd(ray.state));
+        // 将像素坐标除以发射网格尺寸，得到 0~1 的归一化坐标
         center /= vec2(gl_LaunchSizeEXT.xy);
+        // 翻转 y 轴（因为屏幕坐标通常原点在左上，NDC 原点在左下）
         center.y = 1 - center.y;
+        // [0, 1] -> [-1, 1]
         center = center * 2 - 1;
 
+        // 把屏幕空间的采样点转换到世界空间，并在相机位置上加入一个小随机偏移（景深/模糊用）
+        // 预先求视图矩阵的逆，用于从视图空间回到世界空间
         mat4 inverse_view = inverse(camera.view);
+        // 用投影矩阵的逆把 NDC 坐标 center（x,y ∈ [-1,1]，z=-1 代表近平面）变回视图空间坐标
         vec3 camera_view_point = (inverse(camera.project) * vec4(center, -1, 1)).xyz;
+        // 按目标视距 view_depth 重新缩放，使点落在指定视距平面上（用 z 分量做比例因子）
         camera_view_point *= constant.view_depth / -camera_view_point.z;
+        // 把视图空间坐标变回世界空间，得到该像素光线穿过的世界坐标点
         vec3 view_point = (inverse_view * vec4(camera_view_point, 1)).xyz;
+        // 生成一个以 0 为中心的小随机偏移，幅度由 view_depth_strength 控制，用于景深/抖动
         vec2 camera_random_point = vec2(
             constant.view_depth_strength * (rnd(ray.state) - 0.5),
             constant.view_depth_strength * (rnd(ray.state) - 0.5)
         );
-        vec3 random_camera_position = (inverse_view * vec4(camera_random_point, 0, 1)).xyz;
+        // 将这个随机偏移（仅 x,y，z=0）从视图空间变到世界空间，得到一个随机化的相机位置/光圈采样点
+        vec3 random_point = (inverse_view * vec4(camera_random_point, 0, 1)).xyz;
 
         ray.count = 0;
         ray.color = vec3(0);
         ray.albedo = vec3(1);
-        ray.origin = random_camera_position;
-        ray.direction = normalize(view_point - random_camera_position);
+        // 光线从随机化的相机位置发出
+        ray.origin = random_point;
+        // 光线方向指向像素对应的世界坐标点
+        ray.direction = normalize(view_point - random_point);
 
         while (ray.count < constant.max_ray_recursion_depth) {
             traceRayEXT(

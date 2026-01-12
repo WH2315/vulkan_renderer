@@ -7,7 +7,7 @@
 
 layout(location = 0) rayPayloadInEXT Ray ray;
 
-const vec3 sky = vec3(0.9, 1.0, 1.0);
+const vec3 sky = vec3(0.8, 1.0, 1.0);
 const vec3 sun = vec3(5000);
 const vec3 sun_dir = normalize(vec3(0.4, 1.0, 0.5));
 

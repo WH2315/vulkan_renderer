@@ -21,6 +21,7 @@ void main() {
     float delta = b * b - 4 * a * c;
 
     if (delta >= 0) {
+        // 取较近的交点，报告该交点给后续 hit 着色器
         reportIntersectionEXT((-b - sqrt(delta)) / (2 * a), 0);
     }
 }
