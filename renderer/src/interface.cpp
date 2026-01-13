@@ -74,8 +74,8 @@ std::shared_ptr<PushConstants> Interface::createPushConstants(ShaderStages stage
     return std::make_shared<PushConstants>(stages, infos);
 }
 
-std::shared_ptr<NormalModel> Interface::loadNormalModel(const std::string& filename) {
-    return std::make_shared<NormalModel>(model_dir_ + "/" + filename);
+std::shared_ptr<NormalModel> Interface::loadNormalModel(const std::string& filename, const std::vector<std::string>& blacklist) {
+    return std::make_shared<NormalModel>(model_dir_ + "/" + filename, blacklist);
 }
 
 std::shared_ptr<StorageImage> Interface::createStorageImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageUsageFlags usage) {

@@ -6,6 +6,8 @@
 #include "scenes/ray_tracing.hpp"
 #include "scenes/gltf_scene.hpp"
 #include "scenes/path_tracing.hpp"
+#include "scenes/ssao_scene.hpp"
+#include "scenes/microfacet_theory.hpp"
 
 int main() {
     wen::Manager* manager = new wen::Manager;
@@ -23,7 +25,7 @@ int main() {
 
     auto interface = std::make_shared<wen::Interface>("example/scenes/resources");
 
-    wen::renderer_config->setSampleCount(vk::SampleCountFlagBits::e64);
+    // wen::renderer_config->setSampleCount(vk::SampleCountFlagBits::e64);
 
     auto scene_manager = std::make_unique<SceneManager>(interface);
 
@@ -35,8 +37,10 @@ int main() {
     scene_manager->addScene<RayTracing>("Ray Tracing");
     scene_manager->addScene<GLTFScene>("GLTF Scene");
     scene_manager->addScene<PathTracing>("Path Tracing");
+    scene_manager->addScene<SSAO>("SSAO Scene");
+    scene_manager->addScene<MicrofacetTheory>("Microfacet Theory");
 
-    scene_manager->setActiveScene("GLTF Scene");
+    scene_manager->setActiveScene("Microfacet Theory");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();

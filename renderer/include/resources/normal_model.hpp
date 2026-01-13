@@ -35,7 +35,7 @@ public:
 
 class NormalModel : public Model {
 public:
-    NormalModel(const std::string& filename);
+    NormalModel(const std::string& filename, const std::vector<std::string>& blacklist = {});
     ~NormalModel() override;
 
     uint32_t vertex_count;

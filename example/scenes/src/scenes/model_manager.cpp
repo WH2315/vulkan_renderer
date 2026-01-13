@@ -123,7 +123,7 @@ void ModelManager::imgui() {
 
     static const char* filenames[] = {
         "mori_knob.obj", "dragon.obj",    "bunny.obj",    "teapot.obj",
-        "Red.obj",       "sportsCar.obj", "nanosuit.obj",
+        "Red.obj",       "sportsCar.obj", "nanosuit.obj", "mitsuba.obj"
     };
     static int idx = 0;
     ImGui::Combo("model name", &idx, filenames, IM_ARRAYSIZE(filenames));

@@ -17,23 +17,6 @@ struct Index {
     uint i2;
 };
 
-struct GLTFPrimitiveData {
-    uint first_index;
-    uint first_vertex;
-    uint material_index;
-};
-
-struct GLTFMaterial {
-    vec4 base_color_factor;
-    int base_color_texture;
-    vec3 emissive_factor;
-    int emissive_texture;
-    int normal_texture;
-    float metallic_factor;
-    float roughness_factor;
-    int metallic_roughness_texture;
-};
-
 struct Sphere {
     vec3 center;
     float radius;

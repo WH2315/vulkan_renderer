@@ -42,7 +42,7 @@ public:
     std::shared_ptr<ImageTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
     std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
     std::shared_ptr<PushConstants> createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos);
-    std::shared_ptr<NormalModel> loadNormalModel(const std::string& filename);
+    std::shared_ptr<NormalModel> loadNormalModel(const std::string& filename, const std::vector<std::string>& blacklist = {});
     std::shared_ptr<StorageImage> createStorageImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageUsageFlags usage = {});
     std::shared_ptr<RayTracingShaderProgram> createRayTracingShaderProgram();
     std::shared_ptr<RayTracingRenderPipeline> createRayTracingRenderPipeline(std::shared_ptr<RayTracingShaderProgram> shader_program);

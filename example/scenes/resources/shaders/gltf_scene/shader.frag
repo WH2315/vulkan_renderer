@@ -11,5 +11,5 @@ void main () {
     vec2 uv = ndc * 0.5 + 0.5;
     // 翻转 y 轴
     uv.y = 1 - uv.y;
-    out_color = texture(image, uv);
+    out_color = vec4(sqrt(texture(image, uv).rgb), 1);
 }

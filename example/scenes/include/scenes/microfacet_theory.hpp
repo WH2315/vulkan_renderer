@@ -3,9 +3,27 @@
 #include "scenes.hpp"
 #include "camera.hpp"
 
-class PathTracing : public Scene {
+struct MicrofacetTheoryMaterial {
+    enum class Type : int {
+        // 电解质
+        eDielectric = 0,
+        // 导体
+        eConductor = 1
+    };
+    glm::vec3 albedo;
+    Type type;
+    // 导体的折射率为复数，IOR为实部，K为虚部
+    float IOR;
+    float K;
+    // 水平方向粗糙度
+    float alpha_x;
+    // 垂直方向粗糙度
+    float alpha_y;
+};
+
+class MicrofacetTheory : public Scene {
 public:
-    PathTracing(std::shared_ptr<wen::Interface> interface)
+    MicrofacetTheory(std::shared_ptr<wen::Interface> interface)
         : Scene(std::move(interface)) {
         is_enable_ray_tracing = true;
     }
@@ -26,7 +44,24 @@ private:
 
     std::unique_ptr<Camera> camera_;
 
-    std::shared_ptr<wen::GLTFScene> scene_;
+    MicrofacetTheoryMaterial dielectric_material_{};
+    MicrofacetTheoryMaterial conductor_material_{};
+    std::shared_ptr<wen::SphereModel> sphere_;
+
+    MicrofacetTheoryMaterial bunny_d1_material_{};
+    MicrofacetTheoryMaterial bunny_d2_material_{};
+    MicrofacetTheoryMaterial bunny_c_material_{};
+    std::shared_ptr<wen::NormalModel> bunny_;
+
+    MicrofacetTheoryMaterial outter_d_material_{};
+    MicrofacetTheoryMaterial outter_c_material_{};
+    MicrofacetTheoryMaterial inner_material_{};
+    std::shared_ptr<wen::NormalModel> outter_;
+    std::shared_ptr<wen::NormalModel> inner_;
+
+    MicrofacetTheoryMaterial dragon_material_{};
+    std::shared_ptr<wen::NormalModel> dragon_;
+
     std::shared_ptr<wen::AccelerationStructure> as_;
     std::shared_ptr<wen::RayTracingInstance> rt_instance_;
 

@@ -27,7 +27,7 @@ Mesh::~Mesh() {
     indices.clear();
 }
 
-NormalModel::NormalModel(const std::string& filename)
+NormalModel::NormalModel(const std::string& filename, const std::vector<std::string>& blacklist)
     : vertex_count(0), index_count(0) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -38,6 +38,17 @@ NormalModel::NormalModel(const std::string& filename)
                           filename.c_str())) {
         WEN_ERROR("Failed to load model: {0}", filename)
         throw std::runtime_error(warn + err);
+    }
+
+    for (const auto& name : blacklist) {
+        auto it = shapes.begin();
+        while (it != shapes.end()) {
+            if (it->name == name) {
+                it = shapes.erase(it);
+                break;
+            }
+            ++it;
+        }
     }
 
     uint32_t size = 0;

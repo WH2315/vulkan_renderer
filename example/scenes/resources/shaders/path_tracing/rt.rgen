@@ -68,10 +68,11 @@ void main() {
             );
         }
 
-        color += ray.color / float(constant.sample_count);
+        color += ray.color;
     }
 
     float scale = 1.0f / float(constant.frame_index + 1);
     vec3 old_color = imageLoad(image, ivec2(gl_LaunchIDEXT.xy)).xyz;
+    color /= float(constant.sample_count);
     imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(mix(old_color, color, scale), 1));
 }
