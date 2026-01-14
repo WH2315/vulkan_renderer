@@ -126,8 +126,8 @@ void main() {
 
     // cosine重要性采样，得到局部空间的采样方向
     float r = sqrt(rnd(ray.state));
-    float theta = 2 * PI * rnd(ray.state);
-    vec3 cosine_direction_local = vec3(r * cos(theta), sqrt(1 - r * r), r * sin(theta));
+    float phi = 2 * PI * rnd(ray.state);
+    vec3 cosine_direction_local = vec3(r * cos(phi), sqrt(1 - r * r), r * sin(phi));
     // 将局部空间转为世界空间
     vec3 up = abs(normal.y) < 0.999 ? vec3(0, 1, 0) : vec3(1, 0, 0);
     vec3 x_axis = normalize(cross(up, normal));

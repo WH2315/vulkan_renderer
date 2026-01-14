@@ -43,7 +43,7 @@ vec4 Refract(vec3 V_local, vec3 N_local, float cos_theta_i, float IOR) {
     );
 }
 
-// 介电质菲涅尔公式，折射率为实数，返回光线被反射的比例
+// 电介质菲涅尔公式，折射率为实数，返回光线被反射的比例
 float Fresnel(float cos_theta_i, float IOR) {
     // 处理V_local和N_local不在同一半球的情况
     if (cos_theta_i < 0) {

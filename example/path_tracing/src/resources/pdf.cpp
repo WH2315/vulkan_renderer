@@ -17,12 +17,11 @@ glm::vec3 CosinePDF::generate() const {
 }
 
 glm::vec3 CosinePDF::CosineDirection() {
-    auto r1 = Random::Float();
-    auto r2 = Random::Float();
-    auto phi = 2.0f * glm::pi<float>() * r1;
-    auto x = glm::cos(phi) * glm::sqrt(r2);
-    auto y = glm::sin(phi) * glm::sqrt(r2);
-    auto z = glm::sqrt(1.0f - r2);
+    auto r = glm::sqrt(Random::Float());
+    auto phi = 2.0f * glm::pi<float>() * Random::Float();
+    auto x = r * glm::cos(phi);
+    auto y = r * glm::sin(phi);
+    auto z = glm::sqrt(1.0f - r * r);
     return glm::vec3(x, y, z);
 }
 

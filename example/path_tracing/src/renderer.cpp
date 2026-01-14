@@ -105,9 +105,8 @@ glm::vec3 Renderer::traceRay(const Ray& ray, int depth) {
         return emitted;
     }
 
-    // Russian roulette termination to curb deep bounce cost while keeping unbiased weights.
     glm::vec3 attenuation = scatter_record.attenuation;
-    const int roulette_start_depth = 5; // allow some guaranteed bounces before roulette
+    const int roulette_start_depth = 5;
     if (depth <= roulette_start_depth) {
         float survival = glm::clamp(std::max({attenuation.r, attenuation.g, attenuation.b}), 0.05f, 0.95f);
         if (Random::Float() > survival) {
@@ -132,11 +131,11 @@ glm::vec3 Renderer::traceRay(const Ray& ray, int depth) {
     MixturePDF mixture(light, scatter_record.pdf);
     Ray ray_out(hit_record.point, glm::normalize(mixture.generate()), ray.time);
     float pdf = mixture.pdf(ray_out.direction);
-    float brdf = hit_record.material->brdf(hit_record, ray_out);
+    float scattering_pdf = hit_record.material->scatteringPDF(hit_record, ray_out);
     if (abs(pdf) < glm::epsilon<float>()) {
         return emitted;
     }
-    scattered = (attenuation * brdf * traceRay(ray_out, depth - 1)) / pdf;
+    scattered = (attenuation * scattering_pdf * traceRay(ray_out, depth - 1)) / pdf;
 
     return emitted + scattered;
 }

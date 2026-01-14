@@ -106,4 +106,12 @@ std::shared_ptr<SphereModel> Interface::createSphereModel() {
     return std::make_shared<SphereModel>();
 }
 
+std::shared_ptr<VolumeData> Interface::loadVolumeData(const std::string& filename) {
+    return std::make_shared<VolumeData>(path_ + "/volume_datas/" + filename);
+}
+
+std::shared_ptr<VolumeData> Interface::createVolumeData(const std::vector<float>& raw_data) {
+    return std::make_shared<VolumeData>(raw_data);
+}
+
 } // namespace wen

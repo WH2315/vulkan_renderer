@@ -6,7 +6,10 @@ namespace wen {
 DescriptorPool::DescriptorPool() {
     std::vector<DescriptorPool::PoolSizeRatio> pool_ratios = {
         {vk::DescriptorType::eUniformBuffer, 1.0f},
-        {vk::DescriptorType::eCombinedImageSampler, 1.0f}
+        {vk::DescriptorType::eCombinedImageSampler, 1.0f},
+        {vk::DescriptorType::eAccelerationStructureKHR, 1.0f},
+        {vk::DescriptorType::eStorageBuffer, 1.0f},
+        {vk::DescriptorType::eStorageImage, 1.0f}
     };
     init(10, pool_ratios);
 }

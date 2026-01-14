@@ -21,6 +21,7 @@
 #include "ray_tracing/ray_tracing_instance.hpp"
 #include "ray_tracing/gltf/gltf_scene.hpp"
 #include "ray_tracing/sphere_model.hpp"
+#include "resources/volume_data.hpp"
 
 namespace wen {
 
@@ -50,6 +51,8 @@ public:
     std::shared_ptr<RayTracingInstance> createRayTracingInstance();
     std::shared_ptr<GLTFScene> loadGLTFScene(const std::string& filename, const std::vector<std::string>& attrs = {});
     std::shared_ptr<SphereModel> createSphereModel();
+    std::shared_ptr<VolumeData> loadVolumeData(const std::string& filename);
+    std::shared_ptr<VolumeData> createVolumeData(const std::vector<float>& raw_data);
 
 private:
     std::string path_;
