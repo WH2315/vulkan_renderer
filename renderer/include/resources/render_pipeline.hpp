@@ -46,6 +46,8 @@ public:
 struct GraphicsRenderPipelineOptions {
     vk::PolygonMode polygon_mode = vk::PolygonMode::eFill;
     float line_width = 1.0f;
+    vk::CullModeFlagBits cull_mode = vk::CullModeFlagBits::eNone;
+    vk::FrontFace front_face = vk::FrontFace::eClockwise;
     vk::Bool32 depth_test_enable = false;
     std::vector<vk::DynamicState> dynamic_states = {};
 };

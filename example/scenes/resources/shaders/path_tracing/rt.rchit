@@ -129,12 +129,13 @@ void main() {
     float phi = 2 * PI * rnd(ray.state);
     vec3 cosine_direction_local = vec3(r * cos(phi), sqrt(1 - r * r), r * sin(phi));
     // 将局部空间转为世界空间
-    vec3 up = abs(normal.y) < 0.999 ? vec3(0, 1, 0) : vec3(1, 0, 0);
-    vec3 x_axis = normalize(cross(up, normal));
-    vec3 z_axis = normalize(cross(x_axis, normal));
+    vec3 y_axis = normal;
+    vec3 up = abs(y_axis.y) < 0.999 ? vec3(0, 1, 0) : vec3(0, 0, 1);
+    vec3 x_axis = normalize(cross(up, y_axis));
+    vec3 z_axis = normalize(cross(x_axis, y_axis));
     vec3 cosine_direction = normalize(
         cosine_direction_local.x * x_axis +
-        cosine_direction_local.y * normal +
+        cosine_direction_local.y * y_axis +
         cosine_direction_local.z * z_axis
     );
     // cosine重要性采样的pdf由出射方向与法线夹角的cos得出

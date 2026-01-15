@@ -40,7 +40,7 @@ int main() {
     scene_manager->addScene<SSAO>("SSAO Scene");
     scene_manager->addScene<MicrofacetTheory>("Microfacet Theory");
 
-    scene_manager->setActiveScene("Microfacet Theory");
+    scene_manager->setActiveScene("SSAO Scene");
 
     while (!manager->shouldClose()) {
         manager->pollEvents();
