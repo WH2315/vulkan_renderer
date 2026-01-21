@@ -27,19 +27,24 @@ void main() {
     if (sphere.radius > 100) {
         float r = sqrt(rnd(ray.state));
         float phi = 2 * PI * rnd(ray.state);
-        vec3 L_local = vec3(r * cos(phi), sqrt(1 - r * r), r * sin(phi));
+        vec3 cosine_direction_local = vec3(r * cos(phi), sqrt(1 - r * r), r * sin(phi));
 
-        vec3 Y = normal;
-        vec3 up = abs(Y.y) < 0.999 ? vec3(0, 1, 0) : vec3(0, 0, 1);
-        vec3 X = normalize(cross(up, Y));
-        vec3 Z = normalize(cross(X, Y));
+        vec3 y_axis = normal;
+        vec3 up = abs(y_axis.y) < 0.999 ? vec3(0, 1, 0) : vec3(0, 0, 1);
+        vec3 x_axis = normalize(cross(up, y_axis));
+        vec3 z_axis = normalize(cross(x_axis, y_axis));
+        vec3 cosine_direction = normalize(
+            cosine_direction_local.x * x_axis +
+            cosine_direction_local.y * y_axis +
+            cosine_direction_local.z * z_axis
+        );
 
         if (mod(floor(position.x * 8), 8) == 0 || mod(floor(position.z * 8), 8) == 0) {
             ray.albedo *= 0.05;
         }
         ray.albedo *= material.albedo;
         ray.origin = position;
-        ray.direction = normalize(L_local.x * X + L_local.y * Y + L_local.z * Z);
+        ray.direction = cosine_direction;
     } else {
         computeHitColor(position, normal, material); 
     }

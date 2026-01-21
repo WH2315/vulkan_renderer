@@ -146,23 +146,48 @@ void main() {
     ray.count += 1;
     // 光线的反照率
     ray.albedo *= albedo;
-    // 光线的反射方向
+
+    float r = sqrt(rnd(ray.state));
+    float phi = 2 * PI * rnd(ray.state);
+    vec3 cosine_direction_local = vec3(r * cos(phi), sqrt(1 - r * r), r * sin(phi));
+    vec3 y_axis = normal;
+    vec3 up = abs(y_axis.y) < 0.999 ? vec3(0, 1, 0) : vec3(0, 0, 1);
+    vec3 x_axis = normalize(cross(up, y_axis));
+    vec3 z_axis = normalize(cross(x_axis, y_axis));
+    vec3 cosine_direction = normalize(
+        cosine_direction_local.x * x_axis +
+        cosine_direction_local.y * y_axis +
+        cosine_direction_local.z * z_axis
+    );
+    float cosine_pdf = dot(cosine_direction, normal) / PI;
+
+    vec3 reflect_direction = reflect(ray.direction, normal);
+    float reflect_pdf = 1;
+
     ray.direction = normalize(mix(
-        reflect(gl_WorldRayDirectionEXT, normal),
-        normalize(normal + normalize(vec3(uniform_rnd(ray.state, 0, 1), uniform_rnd(ray.state, 0, 1), uniform_rnd(ray.state, 0, 1)))),
+        reflect_direction,
+        cosine_direction,
         roughness
     ));
+
+    float pdf = mix(
+        reflect_pdf,
+        cosine_pdf,
+        roughness
+    );
+
     // 光线打到材质上, 光线反射的颜色(乘上emissive), 累加到ray.color中
     ray.color += ray.albedo * emissive;
 
-    // 正面观察时的反射率
-    vec3 F0 = albedo * metallic + (vec3(0.04) * (1 - metallic));
-    // 粗糙度的平方
-    float roughness2 = roughness * roughness;
-    // 视线方向
-    vec3 view_dir = normalize(ray.origin - position);
-    vec3 brdf_cosine = BRDF(ray.direction, albedo, normal, view_dir, F0, roughness2, metallic);
-    float pdf = 1 / (2 * PI);
+    vec3 brdf_cosine = BRDF(
+        ray.direction,
+        albedo,
+        normal,
+        normalize(ray.origin - position),
+        albedo * metallic + (vec3(0.04) * (1 - metallic)),
+        roughness * roughness,
+        metallic
+    );
     ray.albedo *= brdf_cosine / pdf;
     ray.origin = position;
 }
