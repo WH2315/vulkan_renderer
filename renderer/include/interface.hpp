@@ -10,7 +10,7 @@
 #include "resources/vertex_input/index_buffer.hpp"
 #include "resources/descriptor/descriptor_set.hpp"
 #include "resources/descriptor/uniform_buffer.hpp"
-#include "resources/descriptor/image_texture.hpp"
+#include "resources/descriptor/data_texture.hpp"
 #include "resources/sampler.hpp"
 #include "resources/push_constants/push_constants.hpp"
 #include "resources/normal_model.hpp"
@@ -22,6 +22,7 @@
 #include "ray_tracing/gltf/gltf_scene.hpp"
 #include "ray_tracing/sphere_model.hpp"
 #include "resources/volume_data.hpp"
+#include "resources/descriptor/cubemap_texture.hpp"
 
 namespace wen {
 
@@ -40,7 +41,7 @@ public:
     std::shared_ptr<DescriptorSet> createDescriptorSet();
     std::shared_ptr<UniformBuffer> createUniformBuffer(uint64_t size);
     std::shared_ptr<DataTexture> createTexture(const uint8_t* data, uint32_t width, uint32_t height, uint32_t mip_levels = 0);
-    std::shared_ptr<ImageTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
+    std::shared_ptr<SpecificTexture> createTexture(const std::string& filename, uint32_t mip_levels = 0);
     std::shared_ptr<Sampler> createSampler(const SamplerOptions& options = {});
     std::shared_ptr<PushConstants> createPushConstants(ShaderStages stages, const std::list<std::pair<std::string, ConstantType>>& infos);
     std::shared_ptr<NormalModel> loadNormalModel(const std::string& filename, const std::vector<std::string>& blacklist = {});
@@ -53,6 +54,7 @@ public:
     std::shared_ptr<SphereModel> createSphereModel();
     std::shared_ptr<VolumeData> loadVolumeData(const std::string& filename);
     std::shared_ptr<VolumeData> createVolumeData(const std::vector<float>& raw_data);
+    std::shared_ptr<CubemapTexture> loadCubemap(const std::string& filename);
 
 private:
     std::string path_;

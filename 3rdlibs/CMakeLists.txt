@@ -6,4 +6,10 @@ add_subdirectory(vma)
 add_subdirectory(tinyobjloader)
 add_subdirectory(tinygltf)
 
+option(KTX_FEATURE_TOOLS "Create KTX tools" OFF)
+if(NOT DEFINED BASH_EXECUTABLE)
+    set(BASH_EXECUTABLE "E:\\Git\\bin\\bash.exe")
+endif()
+add_subdirectory(KTX-Software)
+
 include(imgui.cmake)

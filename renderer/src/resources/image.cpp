@@ -5,8 +5,8 @@ namespace wen {
 
 Image::Image(uint32_t width, uint32_t height, vk::Format format,
              vk::ImageUsageFlags image_usage, vk::SampleCountFlagBits samples,
-             VmaMemoryUsage usage, VmaAllocationCreateFlags flags,
-             uint32_t mip_levels) {
+             VmaMemoryUsage usage, VmaAllocationCreateFlags flags, uint32_t mip_levels,
+             uint32_t array_layers, vk::ImageCreateFlagBits image_flags) {
     VmaAllocationCreateInfo allocation_create_info = {};
     allocation_create_info.usage = usage;
     allocation_create_info.flags = flags;
@@ -15,12 +15,14 @@ Image::Image(uint32_t width, uint32_t height, vk::Format format,
     image_create_info.setImageType(vk::ImageType::e2D)
         .setExtent({width, height, 1})
         .setMipLevels(mip_levels)
-        .setArrayLayers(1)
+        .setArrayLayers(array_layers)
         .setFormat(format)
         .setTiling(vk::ImageTiling::eOptimal)
+        .setSharingMode(vk::SharingMode::eExclusive)
         .setUsage(image_usage)
         .setSamples(samples)
-        .setInitialLayout(vk::ImageLayout::eUndefined);
+        .setInitialLayout(vk::ImageLayout::eUndefined)
+        .setFlags(image_flags);
     
     vmaCreateImage(
         manager->vma_allocator,

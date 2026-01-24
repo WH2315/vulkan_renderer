@@ -1,3 +1,5 @@
+#include "resources/descriptor/image_texture.hpp"
+#include "resources/descriptor/ktx_texture.hpp"
 #include "interface.hpp"
 #include "core/log.hpp"
 
@@ -54,12 +56,14 @@ std::shared_ptr<DataTexture> Interface::createTexture(const uint8_t* data, uint3
     return std::make_shared<DataTexture>(data, width, height, mip_levels);
 }
 
-std::shared_ptr<ImageTexture> Interface::createTexture(const std::string& filename, uint32_t mip_levels) {
+std::shared_ptr<SpecificTexture> Interface::createTexture(const std::string& filename, uint32_t mip_levels) {
     auto pos = filename.find_last_of('.') + 1;
     auto filetype = filename.substr(pos, filename.size() - pos);
     std::string filepath = texture_dir_ + "/" + filename;
     if (filetype == "png" || filetype == "jpg") {
         return std::make_shared<ImageTexture>(filepath, mip_levels);
+    } else if (filetype == "ktx") {
+        return std::make_shared<KtxTexture>(filepath);
     } else {
         WEN_ERROR("Unsupported texture format: {}", filetype)
     }
@@ -112,6 +116,10 @@ std::shared_ptr<VolumeData> Interface::loadVolumeData(const std::string& filenam
 
 std::shared_ptr<VolumeData> Interface::createVolumeData(const std::vector<float>& raw_data) {
     return std::make_shared<VolumeData>(raw_data);
+}
+
+std::shared_ptr<CubemapTexture> Interface::loadCubemap(const std::string& filename) {
+    return std::make_shared<CubemapTexture>(texture_dir_ + "/" + filename);
 }
 
 } // namespace wen

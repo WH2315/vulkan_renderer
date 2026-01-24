@@ -48,7 +48,9 @@ struct GraphicsRenderPipelineOptions {
     float line_width = 1.0f;
     vk::CullModeFlagBits cull_mode = vk::CullModeFlagBits::eNone;
     vk::FrontFace front_face = vk::FrontFace::eClockwise;
-    vk::Bool32 depth_test_enable = false;
+    vk::Bool32 depth_test_enable = true;
+    vk::Bool32 depth_write_enable = true;
+    vk::CompareOp depth_compare_op = vk::CompareOp::eLess;
     std::vector<vk::DynamicState> dynamic_states = {};
 };
 

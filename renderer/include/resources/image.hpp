@@ -9,8 +9,8 @@ class Image {
 public:
     Image(uint32_t width, uint32_t height, vk::Format format,
           vk::ImageUsageFlags image_usage, vk::SampleCountFlagBits samples,
-          VmaMemoryUsage usage, VmaAllocationCreateFlags flags,
-          uint32_t mip_levels = 1);
+          VmaMemoryUsage usage, VmaAllocationCreateFlags flags, uint32_t mip_levels = 1,
+          uint32_t array_layers = 1, vk::ImageCreateFlagBits image_flags = {});
     ~Image();
 
     vk::Image image;

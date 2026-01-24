@@ -277,7 +277,7 @@ void SSAO::render(float w, float h) {
 }
 
 void SSAO::imgui() {
-    ImGui::Begin("Setting");
+    ImGui::Begin("Settings");
 
     ImGui::Text("Framerate: %f", ImGui::GetIO().Framerate);
 

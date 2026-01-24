@@ -107,8 +107,8 @@ void GraphicsRenderPipeline::compile(const GraphicsRenderPipelineOptions& option
     // 7. depth and stencil
     vk::PipelineDepthStencilStateCreateInfo depth_stencil = {};
     depth_stencil.setDepthTestEnable(options.depth_test_enable)
-        .setDepthWriteEnable(true)
-        .setDepthCompareOp(vk::CompareOp::eLess)
+        .setDepthWriteEnable(options.depth_write_enable)
+        .setDepthCompareOp(options.depth_compare_op)
         .setDepthBoundsTestEnable(false)
         .setStencilTestEnable(false)
         .setFront({})

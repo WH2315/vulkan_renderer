@@ -1,4 +1,5 @@
-#include "wen.hpp"
+#include <wen.hpp>
+#include "camera.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -46,30 +47,15 @@ int main() {
     auto renderer = interface->createRenderer(std::move(render_pass));
     auto imgui = std::make_shared<wen::Imgui>(*renderer);
 
-    auto vert_shader = interface->loadShader("shader.vert", wen::ShaderStage::eVertex);
-    auto frag_shader = interface->loadShader("shader.frag", wen::ShaderStage::eFragment);
-    auto shader_program = interface->createGraphicsShaderProgram();
-    shader_program->attach(vert_shader).attach(frag_shader);
+    auto cube_model = interface->loadNormalModel("cube.obj");
+    auto cube_vb = interface->createVertexBuffer(sizeof(wen::Vertex), cube_model->vertex_count);
+    auto cube_ib = interface->createIndexBuffer(wen::IndexType::eUint32, cube_model->index_count);
+    cube_model->upload(cube_vb, cube_ib);
 
-    struct Vertex {
-        glm::vec3 position;
-        glm::vec3 color;
-        glm::vec2 uv;
-    };
-    const std::vector<Vertex> vertices = {
-        {{ 0.5f,  0.5f,  0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-        {{ 0.5f, -0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{-0.5f,  0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, -0.5f,  0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-        {{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-    };
-    const std::vector<uint16_t> indices = {
-        0, 1, 2, 1, 2, 3,
-        4, 5, 6, 5, 6, 7,
-    };
+    auto sphere_model = interface->loadNormalModel("sphere.obj");
+    auto sphere_vb = interface->createVertexBuffer(sizeof(wen::Vertex), sphere_model->vertex_count);
+    auto sphere_ib = interface->createIndexBuffer(wen::IndexType::eUint32, sphere_model->index_count);
+    sphere_model->upload(sphere_vb, sphere_ib);
 
     auto vertex_input = interface->createVertexInput({
         {
@@ -77,65 +63,39 @@ int main() {
             .input_rate = wen::InputRate::eVertex,
             .formats = {
                 wen::VertexType::eFloat3, // position
-                wen::VertexType::eFloat3, // color
-                wen::VertexType::eFloat2  // uv
+                wen::VertexType::eFloat3, // normal
+                wen::VertexType::eFloat3  // color
             }
         }
     });
 
-    auto vertex_buffer = interface->createVertexBuffer(sizeof(Vertex), vertices.size());
-    vertex_buffer->setData(vertices);
-    auto index_buffer = interface->createIndexBuffer(wen::IndexType::eUint16, indices.size());
-    index_buffer->setData(indices);
-
     auto descriptor_set = interface->createDescriptorSet();
     descriptor_set->addDescriptors({
-        {0, vk::DescriptorType::eUniformBuffer, wen::ShaderStage::eVertex},
+        {0, vk::DescriptorType::eUniformBuffer, wen::ShaderStage::eVertex|wen::ShaderStage::eFragment},
         {1, vk::DescriptorType::eCombinedImageSampler, wen::ShaderStage::eFragment}
     });
     descriptor_set->build();
 
-    auto push_constants = interface->createPushConstants(
-        wen::ShaderStage::eVertex,
-        {
-            {"pad", wen::ConstantType::eFloat},
-            {"offset", wen::ConstantType::eFloat3}
-        }
-    );
+    struct CameraData {
+        alignas(16) glm::vec3 position;
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 projection;
+    } camera_data;
 
-    glm::vec3 offset = {1.0f, 0.0f, 0.0f};
-    push_constants->pushConstant("offset", &offset);
+    auto camera = Camera(wen::g_window->getWindow(), 60.0f, 0.1f, 100.0f);
+    camera.setup(glm::vec3(0, 0, -5), glm::vec3(0, 0, 1));
 
-    auto render_pipeline = interface->createGraphicsRenderPipeline(renderer, shader_program, "main_subpass");
-    render_pipeline->setVertexInput(vertex_input);
-    render_pipeline->setDescriptorSet(descriptor_set);
-    render_pipeline->setPushConstants(push_constants);
-    render_pipeline->compile({
-        .polygon_mode = vk::PolygonMode::eFill,
-        .depth_test_enable = true,
-        .dynamic_states = {
-            vk::DynamicState::eViewport,
-            vk::DynamicState::eScissor
-        }
-    });
+    auto uniform_buffer = interface->createUniformBuffer(sizeof(CameraData));
 
-    struct UBO {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 project;
-    } ubo;
-
-    auto uniform_buffer = interface->createUniformBuffer(sizeof(UBO));
-
-    auto texture = interface->createTexture("texture.jpg");
+    auto texture = interface->loadCubemap("cubemap_yokohama_rgba.ktx");
     auto sampler = interface->createSampler({
-        .mag_filter = vk::Filter::eNearest,
+        .mag_filter = vk::Filter::eLinear,
         .min_filter = vk::Filter::eLinear,
-        .address_mode_u = vk::SamplerAddressMode::eMirroredRepeat,
-        .address_mode_v = vk::SamplerAddressMode::eMirroredRepeat,
-        .address_mode_w = vk::SamplerAddressMode::eRepeat,
-        .max_anisotropy = 16,
-        .border_color = vk::BorderColor::eFloatOpaqueBlack,
+        .address_mode_u = vk::SamplerAddressMode::eClampToEdge,
+        .address_mode_v = vk::SamplerAddressMode::eClampToEdge,
+        .address_mode_w = vk::SamplerAddressMode::eClampToEdge,
+        .max_anisotropy = 1,
+        .border_color = vk::BorderColor::eFloatOpaqueWhite,
         .mipmap_mode = vk::SamplerMipmapMode::eLinear,
         .mip_levels = texture->getMipLevels()
     });
@@ -143,35 +103,86 @@ int main() {
     descriptor_set->bindUniform(0, uniform_buffer);
     descriptor_set->bindTexture(1, texture, sampler);
 
+    auto skybox_sp = interface->createGraphicsShaderProgram();
+    skybox_sp->attach(interface->loadShader("skybox.vert", wen::ShaderStage::eVertex)).attach(interface->loadShader("skybox.frag", wen::ShaderStage::eFragment));
+    auto skybox_rp = interface->createGraphicsRenderPipeline(renderer, skybox_sp, "main_subpass");
+    skybox_rp->setVertexInput(vertex_input);
+    skybox_rp->setDescriptorSet(descriptor_set);
+    skybox_rp->compile({
+        .polygon_mode = vk::PolygonMode::eFill,
+        .cull_mode = vk::CullModeFlagBits::eFront,
+        .front_face = vk::FrontFace::eCounterClockwise,
+        .depth_test_enable = false,
+        .depth_write_enable = false,
+        .depth_compare_op = vk::CompareOp::eLessOrEqual,
+        .dynamic_states = {
+            vk::DynamicState::eViewport,
+            vk::DynamicState::eScissor
+        }
+    });
+
+    auto sp = interface->createGraphicsShaderProgram();
+    sp->attach(interface->loadShader("shader.vert", wen::ShaderStage::eVertex)).attach(interface->loadShader("shader.frag", wen::ShaderStage::eFragment));
+    auto rp = interface->createGraphicsRenderPipeline(renderer, sp, "main_subpass");
+    rp->setVertexInput(vertex_input);
+    rp->setDescriptorSet(descriptor_set);
+    rp->compile({
+        .polygon_mode = vk::PolygonMode::eFill,
+        .cull_mode = vk::CullModeFlagBits::eBack,
+        .front_face = vk::FrontFace::eCounterClockwise,
+        .depth_test_enable = true,
+        .depth_write_enable = true,
+        .depth_compare_op = vk::CompareOp::eLessOrEqual,
+        .dynamic_states = {
+            vk::DynamicState::eViewport,
+            vk::DynamicState::eScissor
+        }
+    });
+
     while (!manager->shouldClose()) {
         manager->pollEvents();
 
         static auto start = std::chrono::high_resolution_clock::now();
+        static float last_time = 0.0f;
         auto current = std::chrono::high_resolution_clock::now();
         auto time = std::chrono::duration<float, std::chrono::seconds::period>(current - start).count();
+        float delta_time = time - last_time;
+        last_time = time;
 
         auto width = wen::renderer_config->getWidth(), height = wen::renderer_config->getHeight();
         auto w = static_cast<float>(width), h = static_cast<float>(height);
 
         renderer->setClearColor(wen::SWAPCHAIN_IMAGE_ATTACHMENT, {{0.5f, 0.5f, 0.5f, 1.0f}});
 
-        ubo.model = glm::rotate(glm::mat4(1.0f), 0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(-2.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.project = glm::perspective(glm::radians(45.0f), w / h, 0.1f, 10.0f);
-        memcpy(uniform_buffer->getData(), &ubo, sizeof(UBO));
+        camera.resize(width, height);
+        camera.update(delta_time);
+
+        camera_data.position = camera.position;
+        camera_data.view = camera.view;
+        camera_data.projection = camera.projection;
+        memcpy(uniform_buffer->getData(), &camera_data, sizeof(CameraData));
 
         renderer->beginRender();
-        renderer->bindPipeline(render_pipeline);
-        renderer->bindDescriptorSets(render_pipeline);
-        renderer->pushConstants(render_pipeline);
+        renderer->bindPipeline(skybox_rp);
+        renderer->bindDescriptorSets(skybox_rp);
         renderer->setViewport(0, h, w, -h);
         renderer->setScissor(0, 0, width, height);
-        renderer->bindVertexBuffer(vertex_buffer);
-        renderer->bindIndexBuffer(index_buffer); 
-        renderer->drawIndexed(indices.size(), 1, 0, 0, 0);
+        renderer->bindVertexBuffer(cube_vb);
+        renderer->bindIndexBuffer(cube_ib); 
+        renderer->drawIndexed(cube_model->index_count, 1, 0, 0, 0);
+
+        renderer->bindPipeline(rp);
+        renderer->bindDescriptorSets(rp);
+        renderer->setViewport(0, h, w, -h);
+        renderer->setScissor(0, 0, width, height);
+        renderer->bindVertexBuffer(sphere_vb);
+        renderer->bindIndexBuffer(sphere_ib);
+        renderer->drawIndexed(sphere_model->index_count, 1, 0, 0, 0);
 
         imgui->newFrame();
         ImGui::Text("(%.1f FPS)", ImGui::GetIO().Framerate);
+        ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera.position.x, camera.position.y, camera.position.z);
+        ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", camera.direction.x, camera.direction.y, camera.direction.z);
         imgui->renderFrame();
 
         renderer->endRender();
@@ -182,17 +193,19 @@ int main() {
     sampler.reset();
     texture.reset();
     uniform_buffer.reset();
-    render_pipeline.reset();
-    push_constants.reset();
     descriptor_set.reset();
-    index_buffer.reset();
-    vertex_buffer.reset();
-    vertex_input.reset();
-    shader_program.reset();
-    frag_shader.reset();
-    vert_shader.reset();
-    renderer.reset();
 
+    rp.reset();
+    sp.reset();
+    sphere_ib.reset();
+    sphere_vb.reset();
+
+    skybox_rp.reset();
+    skybox_sp.reset();
+    cube_ib.reset();
+    cube_vb.reset();
+
+    renderer.reset();
     interface.reset();
 
     manager->destroyRenderer();

@@ -7,10 +7,12 @@ DescriptorPool::DescriptorPool() {
     std::vector<DescriptorPool::PoolSizeRatio> pool_ratios = {
         {vk::DescriptorType::eUniformBuffer, 1.0f},
         {vk::DescriptorType::eCombinedImageSampler, 1.0f},
-        {vk::DescriptorType::eAccelerationStructureKHR, 1.0f},
         {vk::DescriptorType::eStorageBuffer, 1.0f},
         {vk::DescriptorType::eStorageImage, 1.0f}
     };
+    if (renderer_config->is_enable_ray_tracing) {
+        pool_ratios.push_back({vk::DescriptorType::eAccelerationStructureKHR, 1.0f});
+    }
     init(10, pool_ratios);
 }
 
